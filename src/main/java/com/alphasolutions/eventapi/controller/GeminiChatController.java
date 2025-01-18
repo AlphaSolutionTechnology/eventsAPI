@@ -10,15 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/google-gemini")
 public class GeminiChatController {
-
     private final ChatService ChatService;
 
     public GeminiChatController(ChatService ChatService) {
         this.ChatService = ChatService;
     }
 
-    @PostMapping("/chat")
-    public ChatResponse chat(@RequestBody String message) {
-        return new ChatResponse(this.ChatService.chat(message));
+    @PostMapping(path = "/chat",consumes = "application/json")
+    public  void chat(@RequestBody String message) {
+        System.out.println(message);
     }
 }
