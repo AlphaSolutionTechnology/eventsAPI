@@ -21,7 +21,12 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "id_evento", referencedColumnName = "id_evento", nullable = true)
     private Evento evento;
-
+    @Column(name = "email",nullable = false, length = 255)
+    private String email;
     @Column(name = "redesocial", length = 80)
     private String redeSocial;
+    public User() {}
+    public User(String email,String nome, Role role, Evento evento) {
+
+    }
 }

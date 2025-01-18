@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ChatService {
+
     private final ChatClient chatClient;
 
     public ChatService(ChatClient.Builder chatClientBuilder) {
