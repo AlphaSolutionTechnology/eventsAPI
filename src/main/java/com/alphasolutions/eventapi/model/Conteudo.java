@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.model.entities;
+package com.alphasolutions.eventapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;

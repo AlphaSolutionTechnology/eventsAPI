@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.model.entities;
+package com.alphasolutions.eventapi.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -7,9 +7,8 @@ import lombok.Data;
 @Data
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_user")
-    private Long id;
+    @Column(name = "id_user",nullable = false)
+    private String id;
 
     @Column(name = "nome", nullable = false, length = 255)
     private String nome;
@@ -21,12 +20,20 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "id_evento", referencedColumnName = "id_evento", nullable = true)
     private Evento evento;
-    @Column(name = "email",nullable = false, length = 255)
+
+    @Column(name = "email", nullable = false)
     private String email;
+
     @Column(name = "redesocial", length = 80)
     private String redeSocial;
-    public User() {}
-    public User(String email,String nome, Role role, Evento evento) {
 
+    public User() {}
+    public User(String id,String nome,String email, Role role, Evento evento, String redeSocial) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.role = role;
+        this.evento = evento;
+        this.redeSocial = redeSocial;
     }
 }
