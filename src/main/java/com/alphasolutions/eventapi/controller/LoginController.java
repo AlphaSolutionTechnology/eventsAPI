@@ -5,8 +5,7 @@ import com.alphasolutions.eventapi.service.UserServiceImpl;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.google.api.client.json.webtoken.JsonWebToken.Payload;
 import com.google.api.client.util.Value;
-import com.google.auth.oauth2.TokenVerifier;
-import jakarta.servlet.http.HttpServletRequest;
+
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -34,9 +33,10 @@ public class LoginController {
         String googleToken = body.get("token");
         try{
             if(existingToken != null) {
+                System.out.println(existingToken);
                 return  jwtUtil.extractClaim(existingToken);
-            }
 
+            }
             Payload googlePayload = jwtUtil.verifyGoogleToken(googleToken);
             var email = googlePayload.get("email");
             var name = googlePayload.get("name");
@@ -48,7 +48,7 @@ public class LoginController {
                     .from("eventToken", eventToken)
                     .httpOnly(true)
                     .path("/")
-                    .sameSite("Strict")
+                    .sameSite("Lax")
                     .maxAge(7 * 24 * 60 * 60)
                     .build();
             response.addHeader("Set-Cookie", cookie.toString());
