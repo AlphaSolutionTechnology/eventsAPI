@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class LoginController {
 
     private final UserServiceImpl userServiceImpl;
@@ -33,7 +33,6 @@ public class LoginController {
         String googleToken = body.get("token");
         try{
             if(existingToken != null) {
-                System.out.println(existingToken);
                 return  jwtUtil.extractClaim(existingToken);
 
             }
@@ -57,6 +56,13 @@ public class LoginController {
             return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
 
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<Map<String,Object>> validate(@CookieValue(value = "eventToken", required = false) String existingToken) {
+        System.out.println(existingToken);
+        System.out.println(jwtUtil.extractClaim(existingToken));
+        return jwtUtil.extractClaim(existingToken);
     }
 
 }
