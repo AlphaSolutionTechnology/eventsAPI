@@ -8,8 +8,6 @@ import com.alphasolutions.eventapi.repository.PalestraRepository;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +24,7 @@ private PalestraRepository palestraRepository;
 
 
 @GetMapping("/lista")
-public List<Palestra> PalestraList(@PathVariable Long eventoId){
+public List<Palestra> PalestraList(){
     return palestraRepository.findAll();
 }
 
