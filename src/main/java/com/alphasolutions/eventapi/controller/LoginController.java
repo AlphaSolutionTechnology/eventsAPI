@@ -60,8 +60,6 @@ public class LoginController {
 
     @PostMapping("/validate")
     public ResponseEntity<Map<String,Object>> validate(@CookieValue(value = "eventToken", required = false) String existingToken) {
-        System.out.println(existingToken);
-        System.out.println(jwtUtil.extractClaim(existingToken));
         return jwtUtil.extractClaim(existingToken);
     }
 
