@@ -29,6 +29,9 @@ public class QuestoesController {
 
     @PostMapping
     public Questoes createQuestao(@RequestBody Questoes questoes) {
+        if (questoes.getIdPalestra() == null) {
+            throw new IllegalArgumentException("O campo id_palestra é obrigatório.");
+        }
         return questoesService.save(questoes);
     }
 
