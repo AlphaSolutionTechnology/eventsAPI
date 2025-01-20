@@ -18,4 +18,9 @@ public class Conexao {
     @ManyToOne
     @JoinColumn(name = "id_solicitante", referencedColumnName = "id_user", nullable = false)
     private User solicitante;
+
+    public Conexao(User solicitante, User solicitado) {
+        this.solicitante = solicitante;
+        this.solicitado = solicitado;
+    }
 }
