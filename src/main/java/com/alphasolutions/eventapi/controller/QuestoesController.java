@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/questoes")
@@ -16,43 +18,19 @@ public class QuestoesController {
     private QuestoesService questoesService;
 
     @GetMapping
-    public List<Questoes> getAllQuestoes() {
-        return questoesService.findAll();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Questoes> getQuestaoById(@PathVariable Long id) {
-        return questoesService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public List<Map<String, Object>> getAllQuestoes() {
+        return questoesService.findAll().stream()
+                .map(questao -> Map.of(
+                        "id", questao.getId(),
+                        "question", questao.getEnunciado(),
+                        "choices", questao.getChoices(),
+                        "correctAnswer", questao.getCorrectAnswer()
+                ))
+                .collect(Collectors.toList());
     }
 
     @PostMapping
-    public Questoes createQuestao(@RequestBody Questoes questoes) {
-        if (questoes.getIdPalestra() == null) {
-            throw new IllegalArgumentException("O campo id_palestra é obrigatório.");
-        }
-        return questoesService.save(questoes);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Questoes> updateQuestao(@PathVariable Long id, @RequestBody Questoes updatedQuestoes) {
-        return questoesService.findById(id)
-                .map(existingQuestao -> {
-                    updatedQuestoes.setId(existingQuestao.getId());
-                    Questoes savedQuestao = questoesService.save(updatedQuestoes);
-                    return ResponseEntity.ok(savedQuestao);
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteQuestao(@PathVariable Long id) {
-        if (questoesService.findById(id).isPresent()) {
-            questoesService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes) {
+        return ResponseEntity.ok(questoesService.save(questoes));
     }
 }

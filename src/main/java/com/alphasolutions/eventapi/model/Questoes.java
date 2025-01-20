@@ -2,7 +2,6 @@ package com.alphasolutions.eventapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.List;
 
 @Entity
@@ -25,7 +24,4 @@ public class Questoes {
 
     @Column(name = "correct_answer", nullable = false)
     private String correctAnswer;
-
-    @Column(name = "id_palestra", nullable = false)
-    private Long idPalestra; // Campo adicional para associar a uma palestra
 }
