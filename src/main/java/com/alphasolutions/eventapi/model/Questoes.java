@@ -24,4 +24,7 @@ public class Questoes {
 
     @Column(name = "correct_answer", nullable = false)
     private String correctAnswer;
+
+    @Column(name = "id_palestra", nullable = false)
+    private Long idPalestra; // Adicionado o campo id_palestra
 }
