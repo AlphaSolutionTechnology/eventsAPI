@@ -7,6 +7,8 @@ import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+
+
 @Service
 public class ConnectionServiceImpl implements ConnectionService {
 
@@ -21,9 +23,7 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     @Override
-    public boolean isConnected(Long idSolicitante, Long idSolicitado) {
-        User solicitante = userRepository.findByUniqueCode(idSolicitante);
-        User solicitado = userRepository.findByUniqueCode(idSolicitado);
+    public boolean isConnected(User solicitante, User solicitado) {
         return  conexaoRepository.existsBySolicitanteAndSolicitado(solicitante,solicitado) ||
                 conexaoRepository.existsBySolicitanteAndSolicitado(solicitado,solicitante);
     }
@@ -32,10 +32,11 @@ public class ConnectionServiceImpl implements ConnectionService {
     public void connect (Long idSolicitante, Long idSolicitado) {
         User solicitante = userRepository.findByUniqueCode(idSolicitante);
         User solicitado = userRepository.findByUniqueCode(idSolicitado);
+
         if (solicitante == null || solicitado == null) {
             throw new NullPointerException("Não encontrado nenhum usuario com o id " + (solicitante == null ? idSolicitante:idSolicitado));
         }
-        if(isConnected(idSolicitante, idSolicitado)) {
+        if(isConnected(solicitante, solicitado)) {
             throw new IllegalArgumentException();
         }
         conexaoRepository.save(new Conexao(solicitante, solicitado));
