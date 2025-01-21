@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .csrf((csrf) -> csrf.disable())
                 .cors((Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers("/api/auth/**","/login","/api/connection/**","/api/**").permitAll()
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers("/api/auth/**","/login","/api/connection/**","/api/**","/api/palestra/*").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(formLogin -> formLogin.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());

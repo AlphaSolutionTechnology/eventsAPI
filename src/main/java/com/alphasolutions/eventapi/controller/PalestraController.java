@@ -6,10 +6,10 @@ import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
 
 import java.util.List;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -22,6 +22,9 @@ public class PalestraController {
     
 private PalestraRepository palestraRepository;
 
+public PalestraController(PalestraRepository palestraRepository){
+    this.palestraRepository = palestraRepository;
+}
 
 @GetMapping("/lista")
 public List<Palestra> PalestraList(){
@@ -30,8 +33,15 @@ public List<Palestra> PalestraList(){
 
 
 @PostMapping("/criar")
-public Palestra createPalestra(@RequestBody Palestra palestra){
-    return palestraRepository.save(palestra);
+public ResponseEntity<?> createPalestra(@RequestBody Palestra palestra) {
+
+    if (palestraRepository.existsByTema(palestra.getTema())) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Uma palestra com este tema já existe.");
+    }
+
+    Palestra novaPalestra = palestraRepository.save(palestra);
+    return ResponseEntity.status(HttpStatus.CREATED).body(novaPalestra);
 }
 
 
