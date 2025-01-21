@@ -2,6 +2,8 @@ package com.alphasolutions.eventapi.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "\"user\"")
 @Data
@@ -26,6 +28,9 @@ public class User {
 
     @Column(name = "redesocial", length = 80)
     private String redeSocial;
+
+    @Column(name = "unique_code",updatable = false,nullable = false)
+    private Long uniqueCode;
 
     public User() {}
     public User(String id,String nome,String email, Role role, Evento evento, String redeSocial) {

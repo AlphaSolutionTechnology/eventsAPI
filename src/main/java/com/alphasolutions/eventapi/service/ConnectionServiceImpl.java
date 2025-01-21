@@ -21,17 +21,17 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     @Override
-    public boolean isConnected(String idSolicitante, String idSolicitado) {
-        User solicitante = userRepository.findById(idSolicitante).orElse(null);
-        User solicitado = userRepository.findById(idSolicitado).orElse(null);
+    public boolean isConnected(Long idSolicitante, Long idSolicitado) {
+        User solicitante = userRepository.findByUniqueCode(idSolicitante);
+        User solicitado = userRepository.findByUniqueCode(idSolicitado);
         return  conexaoRepository.existsBySolicitanteAndSolicitado(solicitante,solicitado) ||
                 conexaoRepository.existsBySolicitanteAndSolicitado(solicitado,solicitante);
     }
 
     @Override
-    public void connect(String idSolicitante, String idSolicitado) {
-        User solicitante = userRepository.findById(idSolicitante).orElse(null);
-        User solicitado = userRepository.findById(idSolicitado).orElse(null);
+    public void connect (Long idSolicitante, Long idSolicitado) {
+        User solicitante = userRepository.findByUniqueCode(idSolicitante);
+        User solicitado = userRepository.findByUniqueCode(idSolicitado);
         if (solicitante == null || solicitado == null) {
             throw new NullPointerException("Não encontrado nenhum usuario com o id " + (solicitante == null ? idSolicitante:idSolicitado));
         }
@@ -39,7 +39,7 @@ public class ConnectionServiceImpl implements ConnectionService {
             throw new IllegalArgumentException();
         }
         conexaoRepository.save(new Conexao(solicitante, solicitado));
-        rankingRepository.incrementConnection(idSolicitante);
-        rankingRepository.incrementConnection(idSolicitado);
+        rankingRepository.incrementConnection(solicitante.getId());
+        rankingRepository.incrementConnection(solicitado.getId());
     }
 }

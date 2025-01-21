@@ -33,16 +33,17 @@ public class LoginController {
         String googleToken = body.get("token");
         try{
             if(existingToken != null) {
-                return  jwtUtil.extractClaim(existingToken);
-
+                ResponseEntity<Map<String,Object>> alphaTokenVerifier= jwtUtil.extractClaim(existingToken);
+                if (alphaTokenVerifier.getStatusCode() == HttpStatus.OK) {
+                    return ResponseEntity.ok(alphaTokenVerifier.getBody());
+                }
             }
             Payload googlePayload = jwtUtil.verifyGoogleToken(googleToken);
             var email = googlePayload.get("email");
             var name = googlePayload.get("name");
             var id = googlePayload.getSubject();
             UserDTO userDTO = new UserDTO(id, (String) name, (String) email,null);
-            userServiceImpl.createUser(userDTO);
-            String eventToken = jwtUtil.generateToken(googlePayload);
+            String eventToken = jwtUtil.generateToken(userServiceImpl.createUser(userDTO),id);
             ResponseCookie cookie = ResponseCookie
                     .from("eventToken", eventToken)
                     .httpOnly(true)

@@ -25,14 +25,16 @@ public class ConnectionController {
     }
 
     @PostMapping(value = "/sendconnection",consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String,String>> sendConnection(@RequestBody Map<String,String> connectionRequest) {
-        String idSolicitante = connectionRequest.get("idSolicitante");
-        String idSolicitado = connectionRequest.get("idSolicitado");
+    public ResponseEntity<Map<String,String>> sendConnection(@RequestBody Map<Object,Object> connectionRequest) {
+        Long idSolicitante = (Long)connectionRequest.get("idSolicitante");
+        Long idSolicitado = (Long) connectionRequest.get("idSolicitado");
+
         if(connectionServiceImpl.isConnected(idSolicitante, idSolicitado)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Os usuários já estão conectados!"));
         }
         try {
             connectionServiceImpl.connect(idSolicitante, idSolicitado);
+
             return ResponseEntity.ok().build();
         }catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

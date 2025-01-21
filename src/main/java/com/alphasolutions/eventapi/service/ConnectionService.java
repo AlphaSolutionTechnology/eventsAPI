@@ -1,6 +1,8 @@
 package com.alphasolutions.eventapi.service;
 
 public interface ConnectionService {
-    boolean isConnected(String idSolicitante, String idSolicitado);
-    void connect(String idSolicitante, String idSolicitado);
+
+    boolean isConnected(Long idSolicitante, Long idSolicitado);
+
+    void connect(Long idSolicitante, Long idSolicitado);
 }

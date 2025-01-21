@@ -1,6 +1,7 @@
 package com.alphasolutions.eventapi.utils;
 
 
+import com.alphasolutions.eventapi.model.User;
 import com.google.auth.oauth2.TokenVerifier;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -25,12 +26,13 @@ public class JwtUtil {
     @Value("${jwt.secret-key}")
     private String secretKey;
 
-    public String generateToken(Payload payload) {
+    public String generateToken(User user, String googleId) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email",payload.get("email"));
-        claims.put("name",payload.get("name"));
+        claims.put("email",user.getEmail());
+        claims.put("name",user.getNome());
         claims.put("role","Participante");
-        String googleId = payload.getSubject();
+        claims.put("unique_code",user.getUniqueCode());
+
         return Jwts.builder()
                 .subject(googleId)
                 .issuedAt(new Date())
@@ -54,22 +56,26 @@ public class JwtUtil {
     }
 
     public ResponseEntity<Map<String,Object>> extractClaim(String token){
-        if(validateToken(token)){
-            Claims claims = Jwts
-                    .parser()
-                    .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-            Map<String,Object> claimsMap = new HashMap<>();
-            claimsMap.put("id",claims.getSubject());
-            claimsMap.put("email",claims.get("email"));
-            claimsMap.put("name",claims.get("name"));
-            claimsMap.put("role",claims.get("role"));
-            return ResponseEntity.ok().body(claimsMap);
+        if(validateToken(token)) {
+            try {
+                Claims claims = Jwts
+                        .parser()
+                        .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
+                        .build()
+                        .parseSignedClaims(token)
+                        .getPayload();
+                Map<String, Object> claimsMap = new HashMap<>();
+                claimsMap.put("id", claims.getSubject());
+                claimsMap.put("email", claims.get("email"));
+                claimsMap.put("name", claims.get("name"));
+                claimsMap.put("role", claims.get("role"));
+                claimsMap.put("unique_code", claims.get("unique_code"));
+                return ResponseEntity.ok().body(claimsMap);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("error", ("Invalid token:" + e.getMessage())));
+            }
         }
-        return ResponseEntity.badRequest().body(Map.of("error","Invalid token"));
-
+        return ResponseEntity.badRequest().body(Map.of("error", "Invalid token"));
     }
 
 
