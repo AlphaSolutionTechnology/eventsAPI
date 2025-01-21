@@ -7,7 +7,7 @@ import com.alphasolutions.eventapi.model.UserDTO;
 import com.alphasolutions.eventapi.repository.EventoRepository;
 import com.alphasolutions.eventapi.repository.RoleRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
-import jdk.jfr.Event;
+import com.alphasolutions.eventapi.utils.JwtUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,24 +15,28 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final EventoRepository eventoRepository;
     private final RoleRepository roleRepository;
-    public UserServiceImpl(UserRepository userRepository, EventoRepository eventoRepository, RoleRepository roleRepository) {
+
+    public UserServiceImpl(UserRepository userRepository, EventoRepository eventoRepository, RoleRepository roleRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.eventoRepository = eventoRepository;
         this.roleRepository = roleRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
-    public void createUser(UserDTO userDTO) {
-        if(userRepository.findById(userDTO.getId()).isPresent()) {
-            return;
+    public User createUser(UserDTO userDTO) {
+
+        if(userRepository.findById(userDTO.getId()).isEmpty()) {
+            Evento evento = eventoRepository.findById(1).orElse(null);
+            Role role = roleRepository.findById(2L).orElse(null);
+            User user = new User(userDTO.getId(),userDTO.getUsername(),userDTO.getEmail(),role,evento,userDTO.getRedesocial());
+            return userRepository.save(user);
         }
-        Evento evento = eventoRepository.findById(1).orElse(null);
-        Role role = roleRepository.findById(2L).orElse(null);
-        User user = new User(userDTO.getId(),userDTO.getUsername(),userDTO.getEmail(),role,evento,userDTO.getRedesocial());
-        userRepository.save(user);
+        return userRepository.findById(userDTO.getId()).orElse(null);
     }
 
     @Override
@@ -42,6 +46,10 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("User not found");
         }
         return new UserDTO(user.getId(),user.getNome(), user.getEmail(), user.getRedeSocial());
+    }
+
+    public User getUserByUniqueId(Long uniqueId) {
+        return userRepository.findByUniqueCode(uniqueId);
     }
 
     @Override
