@@ -1,5 +1,6 @@
 package com.alphasolutions.eventapi.controller;
 
+import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.model.UserDTO;
 import com.alphasolutions.eventapi.service.UserServiceImpl;
 import com.alphasolutions.eventapi.utils.JwtUtil;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -33,17 +36,24 @@ public class LoginController {
         String googleToken = body.get("token");
         try{
             if(existingToken != null) {
-                ResponseEntity<Map<String,Object>> alphaTokenVerifier= jwtUtil.extractClaim(existingToken);
-                if (alphaTokenVerifier.getStatusCode() == HttpStatus.OK) {
-                    return ResponseEntity.ok(alphaTokenVerifier.getBody());
+                Map<String,Object> alphaTokenVerifier = jwtUtil.extractClaim(existingToken);
+                if (alphaTokenVerifier.get("error") != null) {
+                    return ResponseEntity.ok(alphaTokenVerifier);
                 }
             }
             Payload googlePayload = jwtUtil.verifyGoogleToken(googleToken);
-            var email = googlePayload.get("email");
-            var name = googlePayload.get("name");
             var id = googlePayload.getSubject();
-            UserDTO userDTO = new UserDTO(id, (String) name, (String) email,null);
-            String eventToken = jwtUtil.generateToken(userServiceImpl.createUser(userDTO),id);
+            User user = userServiceImpl.userExists(id);
+            String eventToken;
+            if(user != null)  {
+                eventToken = userServiceImpl.giveUserAnotherToken(user);
+            }else{
+                var email = googlePayload.get("email");
+                var name = googlePayload.get("name");
+                UserDTO userDTO = new UserDTO(id, (String) name, (String) email, userServiceImpl.generateUniqueCode(),null);
+                eventToken = jwtUtil.generateToken(userServiceImpl.createUser(userDTO));
+            }
+
             ResponseCookie cookie = ResponseCookie
                     .from("eventToken", eventToken)
                     .httpOnly(true)
@@ -52,7 +62,7 @@ public class LoginController {
                     .maxAge(7 * 24 * 60 * 60)
                     .build();
             response.addHeader("Set-Cookie", cookie.toString());
-            return jwtUtil.extractClaim(eventToken);
+            return ResponseEntity.ok().body(jwtUtil.extractClaim(eventToken));
         } catch (Exception e) {
             return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
@@ -61,7 +71,13 @@ public class LoginController {
 
     @PostMapping("/validate")
     public ResponseEntity<Map<String,Object>> validate(@CookieValue(value = "eventToken", required = false) String existingToken) {
-        return jwtUtil.extractClaim(existingToken);
+        Map<String,Object> body = jwtUtil.extractClaim(existingToken);
+        if(body.get("error") != null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", body.get("error")));
+        }
+        return ResponseEntity.ok().body(body);
     }
+
+
 
 }

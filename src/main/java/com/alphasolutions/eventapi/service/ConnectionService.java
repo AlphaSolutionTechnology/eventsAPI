@@ -6,5 +6,5 @@ public interface ConnectionService {
 
     boolean isConnected(User Solicitante, User idSolicitado);
 
-    void connect(Long idSolicitante, Long idSolicitado);
+    void connect(String idSolicitante, String idSolicitado);
 }

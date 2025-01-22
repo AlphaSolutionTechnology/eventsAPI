@@ -1,11 +1,15 @@
 package com.alphasolutions.eventapi.model;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.UUID;
+import jakarta.persistence.SequenceGenerator;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "\"user\"")
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class User {
     @Id
@@ -30,15 +34,6 @@ public class User {
     private String redeSocial;
 
     @Column(name = "unique_code",updatable = false,nullable = false)
-    private Long uniqueCode;
+    private String uniqueCode;
 
-    public User() {}
-    public User(String id,String nome,String email, Role role, Evento evento, String redeSocial) {
-        this.id = id;
-        this.nome = nome;
-        this.email = email;
-        this.role = role;
-        this.evento = evento;
-        this.redeSocial = redeSocial;
-    }
 }
