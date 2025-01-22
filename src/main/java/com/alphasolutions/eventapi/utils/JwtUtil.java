@@ -2,6 +2,7 @@ package com.alphasolutions.eventapi.utils;
 
 
 import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.repository.UserRepository;
 import com.google.auth.oauth2.TokenVerifier;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -20,21 +21,26 @@ import com.google.api.client.json.webtoken.JsonWebToken.Payload;
 @Service
 public class JwtUtil {
 
+    private final UserRepository userRepository;
     @Value("${client.id}")
     private String clientID;
 
     @Value("${jwt.secret-key}")
     private String secretKey;
 
-    public String generateToken(User user, String googleId) {
+    public JwtUtil(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email",user.getEmail());
         claims.put("name",user.getNome());
-        claims.put("role","Participante");
+        claims.put("role",user.getRole().getRole());
         claims.put("unique_code",user.getUniqueCode());
 
         return Jwts.builder()
-                .subject(googleId)
+                .subject(user.getId())
                 .issuedAt(new Date())
                 .claims(claims)
                 .expiration(new Date(System.currentTimeMillis() + 3600 * 1000 * 24 * 7))
@@ -55,7 +61,7 @@ public class JwtUtil {
         }
     }
 
-    public ResponseEntity<Map<String,Object>> extractClaim(String token){
+    public Map<String,Object> extractClaim(String token){
         if(validateToken(token)) {
             try {
                 Claims claims = Jwts
@@ -70,14 +76,13 @@ public class JwtUtil {
                 claimsMap.put("name", claims.get("name"));
                 claimsMap.put("role", claims.get("role"));
                 claimsMap.put("unique_code", claims.get("unique_code"));
-                return ResponseEntity.ok().body(claimsMap);
+                return claimsMap;
             } catch (Exception e) {
-                return ResponseEntity.badRequest().body(Map.of("error", ("Invalid token:" + e.getMessage())));
+                return Map.of("error",e.getMessage());
             }
         }
-        return ResponseEntity.badRequest().body(Map.of("error", "Invalid token"));
+        return Map.of("error","Invalid Token");
     }
-
 
 
     public Payload verifyGoogleToken(String googleToken) {

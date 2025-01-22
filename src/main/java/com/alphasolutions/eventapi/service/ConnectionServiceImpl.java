@@ -1,11 +1,15 @@
 package com.alphasolutions.eventapi.service;
 
+import com.alphasolutions.eventapi.Exception.AlreadyConnectedUsersException;
+import com.alphasolutions.eventapi.Exception.UserNotFoundException;
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.ConexaoRepository;
 import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
+
 
 @Service
 public class ConnectionServiceImpl implements ConnectionService {
@@ -21,22 +25,21 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     @Override
-    public boolean isConnected(Long idSolicitante, Long idSolicitado) {
-        User solicitante = userRepository.findByUniqueCode(idSolicitante);
-        User solicitado = userRepository.findByUniqueCode(idSolicitado);
+    public boolean isConnected(User solicitante, User solicitado) {
         return  conexaoRepository.existsBySolicitanteAndSolicitado(solicitante,solicitado) ||
                 conexaoRepository.existsBySolicitanteAndSolicitado(solicitado,solicitante);
     }
 
     @Override
-    public void connect (Long idSolicitante, Long idSolicitado) {
+    public void connect (String idSolicitante, String idSolicitado) {
         User solicitante = userRepository.findByUniqueCode(idSolicitante);
         User solicitado = userRepository.findByUniqueCode(idSolicitado);
+
         if (solicitante == null || solicitado == null) {
-            throw new NullPointerException("Não encontrado nenhum usuario com o id " + (solicitante == null ? idSolicitante:idSolicitado));
+            throw new UserNotFoundException("Não encontrado nenhum usuario com o id " + (solicitante == null ? idSolicitante:idSolicitado));
         }
-        if(isConnected(idSolicitante, idSolicitado)) {
-            throw new IllegalArgumentException();
+        if(isConnected(solicitante, solicitado)) {
+            throw new AlreadyConnectedUsersException("Usuarios já estão conectados");
         }
         conexaoRepository.save(new Conexao(solicitante, solicitado));
         rankingRepository.incrementConnection(solicitante.getId());
