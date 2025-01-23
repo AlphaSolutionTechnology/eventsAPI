@@ -8,4 +8,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ConexaoRepository extends JpaRepository<Conexao, Integer> {
     boolean existsBySolicitanteAndSolicitado(User solicitante, User solicitado);
+
+    Conexao findBySolicitante(User solicitante);
+
+    Conexao findBySolicitado(User solicitado);
+
+    Conexao findBySolicitanteAndSolicitado(User solicitante,User solicitado);
 }

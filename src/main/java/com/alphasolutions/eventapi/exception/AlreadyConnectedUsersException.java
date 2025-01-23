@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.Exception;
+package com.alphasolutions.eventapi.exception;
 
 public class AlreadyConnectedUsersException extends RuntimeException {
     public AlreadyConnectedUsersException(String message) {
