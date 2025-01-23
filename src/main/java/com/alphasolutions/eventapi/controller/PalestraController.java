@@ -53,27 +53,20 @@ public ResponseEntity<?> createPalestra(@RequestBody Palestra palestra) {
 public ResponseEntity<?> deletePalestras(@RequestBody PalestraIdsDTO dto) {
     List<Long> ids = dto.getIds();
 
-    if (ids.isEmpty()) {
+    if (ids == null || ids.isEmpty()) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Nenhuma palestra selecionada para exclusão.");
     }
 
-    List<Long> idsNaoEncontrados = new ArrayList<>();
-    for (Long id : ids) {
-        if (palestraRepository.existsById(id)) {
-            palestraRepository.deleteById(id);
-        } else {
-            idsNaoEncontrados.add(id);
-        }
+    try {
+        palestraRepository.deleteAllById(ids);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erro ao excluir palestras: " + e.getMessage());
     }
-
-    if (!idsNaoEncontrados.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("As palestras com os seguintes IDs não foram encontradas: " + idsNaoEncontrados);
-    }
-
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); 
 }
+
 
 
 

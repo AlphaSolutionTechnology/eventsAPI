@@ -29,4 +29,8 @@ public class QuestoesService {
     public void deleteById(Long id) {
         questoesRepository.deleteById(id);
     }
+
+    public List<Questoes> findQuestoesByPalestra(Long idPalestra) {
+       return questoesRepository.findByIdPalestra(idPalestra);
+}
 }
