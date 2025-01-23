@@ -1,0 +1,24 @@
+package com.alphasolutions.eventapi.websocket.service;
+
+import com.alphasolutions.eventapi.repository.ConexaoRepository;
+import com.alphasolutions.eventapi.service.ConnectionServiceImpl;
+import com.alphasolutions.eventapi.websocket.utils.NotificationResponseMessage;
+import com.alphasolutions.eventapi.websocket.utils.Status;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.stereotype.Service;
+
+@Service
+public class NotificationService {
+
+    private final ConnectionServiceImpl connectionServiceImpl;
+
+    public NotificationService(ConnectionServiceImpl connectionServiceImpl) {
+        this.connectionServiceImpl = connectionServiceImpl;
+    }
+
+
+    public NotificationResponseMessage askForConnection(String currentUserUniqueCode, String toUserUniqueCode) {
+        return connectionServiceImpl.connect(currentUserUniqueCode, toUserUniqueCode, Status.WAITING);
+    }
+}

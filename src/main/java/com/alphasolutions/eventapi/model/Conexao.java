@@ -19,8 +19,16 @@ public class Conexao {
     @JoinColumn(name = "id_solicitante", referencedColumnName = "id_user", nullable = false)
     private User solicitante;
 
-    public Conexao(User solicitante, User solicitado) {
+    @Column(name="status", nullable = false)
+    private String status;
+
+    public Conexao(User solicitante, User solicitado, String status) {
         this.solicitante = solicitante;
         this.solicitado = solicitado;
+        this.status = status;
+    }
+
+    public Conexao() {
+
     }
 }

@@ -1,0 +1,14 @@
+package com.alphasolutions.eventapi.websocket.utils;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class NotificationRequest {
+    private String request;
+}
