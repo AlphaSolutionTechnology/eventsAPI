@@ -1,9 +1,9 @@
 package com.alphasolutions.eventapi.websocket.controller;
 
 import com.alphasolutions.eventapi.websocket.service.NotificationService;
-import com.alphasolutions.eventapi.websocket.utils.NotificationMessage;
-import com.alphasolutions.eventapi.websocket.utils.NotificationRequest;
-import com.alphasolutions.eventapi.websocket.utils.NotificationResponseMessage;
+import com.alphasolutions.eventapi.websocket.notification.NotificationMessage;
+import com.alphasolutions.eventapi.websocket.notification.NotificationRequest;
+import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;

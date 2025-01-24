@@ -1,14 +1,12 @@
 package com.alphasolutions.eventapi.service;
 
-import com.alphasolutions.eventapi.exception.AlreadyConnectedUsersException;
-import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.ConexaoRepository;
 import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
-import com.alphasolutions.eventapi.websocket.utils.NotificationResponseMessage;
-import com.alphasolutions.eventapi.websocket.utils.Status;
+import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
+import com.alphasolutions.eventapi.websocket.notification.Status;
 import org.springframework.stereotype.Service;
 
 

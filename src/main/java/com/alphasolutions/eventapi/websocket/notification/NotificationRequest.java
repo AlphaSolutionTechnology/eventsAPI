@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.websocket.utils;
+package com.alphasolutions.eventapi.websocket.notification;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

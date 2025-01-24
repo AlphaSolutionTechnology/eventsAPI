@@ -1,11 +1,8 @@
 package com.alphasolutions.eventapi.websocket.service;
 
-import com.alphasolutions.eventapi.repository.ConexaoRepository;
 import com.alphasolutions.eventapi.service.ConnectionServiceImpl;
-import com.alphasolutions.eventapi.websocket.utils.NotificationResponseMessage;
-import com.alphasolutions.eventapi.websocket.utils.Status;
-import lombok.Getter;
-import lombok.Setter;
+import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
+import com.alphasolutions.eventapi.websocket.notification.Status;
 import org.springframework.stereotype.Service;
 
 @Service
