@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .csrf((csrf) -> csrf.disable())
                 .cors((Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers("/api/auth/**","/login","/api/connection/**","/api/**","/ws/**").permitAll()
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers("/api/auth/**","/login","/api/connection/**","/api/**","/ws/**","api/connection/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new WebSocketFilter(userDetailsService), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(formLogin -> formLogin.disable())

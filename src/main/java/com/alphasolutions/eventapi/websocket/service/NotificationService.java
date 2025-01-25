@@ -1,6 +1,5 @@
 package com.alphasolutions.eventapi.websocket.service;
 
-import com.alphasolutions.eventapi.service.ConnectionServiceImpl;
 import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
 import com.alphasolutions.eventapi.websocket.notification.Status;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,12 @@ public class NotificationService {
         this.connectionServiceImpl = connectionServiceImpl;
     }
 
-
     public NotificationResponseMessage askForConnection(String currentUserUniqueCode, String toUserUniqueCode) {
         return connectionServiceImpl.connect(currentUserUniqueCode, toUserUniqueCode, Status.WAITING);
+    }
+
+    public NotificationResponseMessage acceptConnection(String currentUserUniqueCode) {
+        //TODO
+        return null;
     }
 }

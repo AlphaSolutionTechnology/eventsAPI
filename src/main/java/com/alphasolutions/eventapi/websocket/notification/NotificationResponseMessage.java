@@ -9,4 +9,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NotificationResponseMessage {
     private String message;
+    private String to;
+
+    public NotificationResponseMessage(String message) {
+        this.message = message;
+        this.to = "";
+    }
 }

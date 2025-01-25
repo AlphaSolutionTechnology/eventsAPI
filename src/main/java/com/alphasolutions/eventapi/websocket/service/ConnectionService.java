@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.service;
+package com.alphasolutions.eventapi.websocket.service;
 
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;

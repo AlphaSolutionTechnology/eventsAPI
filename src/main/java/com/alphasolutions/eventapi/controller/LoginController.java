@@ -53,7 +53,6 @@ public class LoginController {
                 UserDTO userDTO = new UserDTO(id, (String) name, (String) email, userServiceImpl.generateUniqueCode(),null);
                 eventToken = jwtUtil.generateToken(userServiceImpl.createUser(userDTO));
             }
-
             ResponseCookie cookie = ResponseCookie
                     .from("eventToken", eventToken)
                     .httpOnly(true)

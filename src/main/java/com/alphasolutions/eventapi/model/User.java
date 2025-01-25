@@ -3,7 +3,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import jakarta.persistence.SequenceGenerator;
 import lombok.NoArgsConstructor;
 
 @Entity

@@ -5,4 +5,5 @@ import com.alphasolutions.eventapi.model.User;
 public interface UserRepository extends JpaRepository<User, String> {
     User findByUniqueCode(String uniqueCode);
 
+    boolean existsByUniqueCode(String uniqueCode);
 }

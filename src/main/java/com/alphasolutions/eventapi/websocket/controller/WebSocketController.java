@@ -1,8 +1,8 @@
 package com.alphasolutions.eventapi.websocket.controller;
 
+import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.websocket.service.NotificationService;
 import com.alphasolutions.eventapi.websocket.notification.NotificationMessage;
-import com.alphasolutions.eventapi.websocket.notification.NotificationRequest;
 import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -11,14 +11,18 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Map;
 
 @Controller
 public class WebSocketController {
+    private final UserRepository userRepository;
     NotificationService notificationService;
     SimpMessagingTemplate messagingTemplate;
-    public WebSocketController(NotificationService notificationService, SimpMessagingTemplate messagingTemplate) {
+    public WebSocketController(NotificationService notificationService, SimpMessagingTemplate messagingTemplate, UserRepository userRepository) {
         this.notificationService = notificationService;
         this.messagingTemplate = messagingTemplate;
+        this.userRepository = userRepository;
     }
 
     @MessageMapping("/message")
@@ -30,13 +34,17 @@ public class WebSocketController {
 
     @MessageMapping("/sendrequest")
     public void notification(@Payload NotificationMessage message, Principal principal) {
+        System.out.println("received message: " + message.getTo());
         NotificationResponseMessage response = notificationService.askForConnection(principal.getName(),message.getTo());
-        String[] senderName = principal.getName().split(" ");
-        NotificationRequest request = new NotificationRequest(senderName[0] + " Quer se conectar a você!");
+        String[] senderName = {""};
+        if(!response.getMessage().contains("encontrado")){
+            senderName = userRepository.findByUniqueCode(message.getTo()).getNome().split(" ");
+        }
+        response.setTo(principal.getName());
         messagingTemplate.convertAndSendToUser(principal.getName(),"/queue/notification" ,response);
         System.out.println(response.getMessage());
         if(response.getMessage().equals("Sucesso!")){
-            messagingTemplate.convertAndSendToUser(message.getTo(),"/queue/notification" ,request);
+            messagingTemplate.convertAndSendToUser(message.getTo(),"/queue/notification" , Map.of("to",message.getTo(),"message",(Arrays.toString(senderName) + " quer se conectar a você")));
         }
     }
 }

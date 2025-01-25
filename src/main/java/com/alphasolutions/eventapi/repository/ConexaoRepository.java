@@ -5,13 +5,14 @@ import com.alphasolutions.eventapi.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface ConexaoRepository extends JpaRepository<Conexao, Integer> {
     boolean existsBySolicitanteAndSolicitado(User solicitante, User solicitado);
 
-    Conexao findBySolicitante(User solicitante);
-
-    Conexao findBySolicitado(User solicitado);
-
     Conexao findBySolicitanteAndSolicitado(User solicitante,User solicitado);
+
+    List<Conexao> findAllBySolicitadoAndStatus(User solicitado, String status);
 }
