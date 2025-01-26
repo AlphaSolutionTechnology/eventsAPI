@@ -19,11 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     }
 
-
     @Override
     public UserDetails loadUserByUsername(String token) throws UsernameNotFoundException {
         Map<String,Object> claim = jwtUtil.extractClaim(token);
         return new CustomUserDetails(claim.get("unique_code").toString());
-
     }
 }

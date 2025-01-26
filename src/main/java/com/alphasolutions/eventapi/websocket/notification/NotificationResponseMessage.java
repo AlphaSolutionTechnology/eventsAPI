@@ -10,7 +10,6 @@ import lombok.Setter;
 public class NotificationResponseMessage {
     private String message;
     private String to;
-
     public NotificationResponseMessage(String message) {
         this.message = message;
         this.to = "";

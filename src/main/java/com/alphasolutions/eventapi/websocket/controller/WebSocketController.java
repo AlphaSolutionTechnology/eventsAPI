@@ -34,7 +34,6 @@ public class WebSocketController {
 
     @MessageMapping("/sendrequest")
     public void notification(@Payload NotificationMessage message, Principal principal) {
-        System.out.println("received message: " + message.getTo());
         NotificationResponseMessage response = notificationService.askForConnection(principal.getName(),message.getTo());
         String[] senderName = {""};
         if(!response.getMessage().contains("encontrado")){
@@ -44,7 +43,7 @@ public class WebSocketController {
         messagingTemplate.convertAndSendToUser(principal.getName(),"/queue/notification" ,response);
         System.out.println(response.getMessage());
         if(response.getMessage().equals("Sucesso!")){
-            messagingTemplate.convertAndSendToUser(message.getTo(),"/queue/notification" , Map.of("to",message.getTo(),"message",(Arrays.toString(senderName) + " quer se conectar a você")));
+            messagingTemplate.convertAndSendToUser(message.getTo(),"/queue/notification" , Map.of("to",message.getTo(), "from", principal.getName(),"message","quer se conectar a você","name",(senderName[0] + " "+ senderName[1])));
         }
     }
 }

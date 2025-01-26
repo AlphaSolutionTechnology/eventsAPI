@@ -70,14 +70,19 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     public void answerConnectionRequest(String to, String from, String status) {
+        if(to == null || to.isEmpty() || from == null || from.isEmpty()) {
+            throw new NullPointerException("User foi null" + to == null?to:from);
+        }
         User solicitante = userRepository.findByUniqueCode(from);
         User solicitado = userRepository.findByUniqueCode(to);
+        System.out.println(to + " - " + from + " - " + status + " - " + solicitante + " - " + solicitado);
         Conexao conexao = conexaoRepository.findBySolicitanteAndSolicitado(solicitante, solicitado);
         if(status.equals(Status.ACCEPTED.getStatus())) {
             conexao.setStatus(Status.ACCEPTED.getStatus());
             conexaoRepository.save(conexao);
             messagingTemplate.convertAndSendToUser(from,"/queue/notification",Map.of("status",solicitado.getNome().split(" ")[0] +" "+ solicitado.getNome().split(" ")[1] +(" aceitou sua solicitação")));
         }else{
+            conexao.setStatus(Status.DECLINED.getStatus());
             conexaoRepository.delete(conexao);
         }
 
