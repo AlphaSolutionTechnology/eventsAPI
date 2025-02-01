@@ -46,8 +46,9 @@ public class ConnectionController {
     }
 
 
-    @PatchMapping(value = "/answerconnectionrequest",consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/answerconnectionrequest")
     public ResponseEntity<String> answerConnectionRequest(@CookieValue(value = "eventToken") String token, @RequestBody AlphaConnectionRequest connectionRequest) {
+        System.out.println(connectionRequest.toString());
         Map<String,Object> validatedToken = jwtUtil.extractClaim(token);
         if (validatedToken.get("error") == null) {
             if(validatedToken.get("unique_code").equals(connectionRequest.getTo())){

@@ -77,7 +77,18 @@ public class LoginController {
         return ResponseEntity.ok().body(body);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout(@CookieValue(value = "eventToken", required = true) String existingToken, HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie
+                .from("eventToken", "")
+                .httpOnly(true)
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
 
-
+        return ResponseEntity.ok(Map.of("message", "Logout realizado com sucesso"));
+    }
 
 }
