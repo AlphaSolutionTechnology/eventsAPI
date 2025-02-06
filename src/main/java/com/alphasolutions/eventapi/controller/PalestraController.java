@@ -1,13 +1,8 @@
 package com.alphasolutions.eventapi.controller;
-
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.service.annotation.DeleteExchange;
-
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.PalestraIdsDTO;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
-
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
