@@ -49,7 +49,6 @@ public class ConnectionServiceImpl implements ConnectionService {
         User solicitante = userRepository.findByUniqueCode(idSolicitante);
         User solicitado = userRepository.findByUniqueCode(idSolicitado);
 
-
         if(isConnected(solicitante, solicitado)) {
             Conexao solicitantSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitante,solicitado);
             Conexao solicitatedSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitado,solicitante);
@@ -71,7 +70,7 @@ public class ConnectionServiceImpl implements ConnectionService {
 
     public void answerConnectionRequest(String to, String from, String status) {
         if(to == null || to.isEmpty() || from == null || from.isEmpty()) {
-            throw new NullPointerException("User foi null" + to == null?to:from);
+            throw new NullPointerException(("User foi null: ") + (to == null?from:to));
         }
         User solicitante = userRepository.findByUniqueCode(from);
         User solicitado = userRepository.findByUniqueCode(to);

@@ -2,6 +2,8 @@ package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.model.UserDTO;
+import com.alphasolutions.eventapi.repository.RoleRepository;
+import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.service.UserServiceImpl;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.google.api.client.json.webtoken.JsonWebToken.Payload;
@@ -21,16 +23,30 @@ import java.util.Map;
 public class LoginController {
 
     private final UserServiceImpl userServiceImpl;
-    @Value("${client.id}")
-    private String clientID;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     public JwtUtil jwtUtil;
 
-    public LoginController(JwtUtil jwtUtil, UserServiceImpl userServiceImpl) {
+    public LoginController(JwtUtil jwtUtil, UserServiceImpl userServiceImpl, UserRepository userRepository, RoleRepository roleRepository) {
         this.jwtUtil = jwtUtil;
         this.userServiceImpl = userServiceImpl;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
+    @PostMapping("/admin")
+    public ResponseEntity<?> becomeAdmin(@CookieValue(value = "eventToken") String eventToken) {
+        Map<String,Object> token = jwtUtil.extractClaim(eventToken);
+        User user = userRepository.findById(token.get("id").toString()).orElse(null);
+        if(user.getRole().getId() == 2L) {
+            user.setRole(roleRepository.findById(1L).orElse(null));
+        }else{
+            user.setRole(roleRepository.findById(2L).orElse(null));
+        }
+        userRepository.save(user);
+        return ResponseEntity.ok().body("não é mais " + user.getRole());
+    }
     @PostMapping("/google")
     public ResponseEntity<Map<String,Object>> authenticateWithGoogle(@RequestBody Map<String,String> body, HttpServletResponse response, @CookieValue(value = "eventToken", required = false) String existingToken) {
         String googleToken = body.get("token");

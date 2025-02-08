@@ -1,15 +1,11 @@
 package com.alphasolutions.eventapi.controller;
 
+import com.alphasolutions.eventapi.model.AlphaConnectionRequest;
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.ConexaoDTO;
-import com.alphasolutions.eventapi.service.UserServiceImpl;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.websocket.service.ConnectionServiceImpl;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

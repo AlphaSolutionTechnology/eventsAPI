@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.controller;
+package com.alphasolutions.eventapi.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
