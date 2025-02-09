@@ -26,9 +26,13 @@ public class WebSocketFilter extends OncePerRequestFilter {
             Cookie[] cookies = request.getCookies();
             for(Cookie cookie : cookies) {
                 if(cookie.getName().equals("eventToken")) {
-                    UserDetails user = userDetailsService.loadUserByUsername(cookie.getValue());
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getUsername(), null, null);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    try{
+                        UserDetails user = userDetailsService.loadUserByUsername(cookie.getValue());
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getUsername(), null, null);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    } catch (Exception e) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    }
                 }
             }
         }

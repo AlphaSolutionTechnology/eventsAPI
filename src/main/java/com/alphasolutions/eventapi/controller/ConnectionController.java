@@ -7,6 +7,7 @@ import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.websocket.service.ConnectionServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -19,10 +20,11 @@ public class ConnectionController {
 
     private final JwtUtil jwtUtil;
     private final ConnectionServiceImpl connectionServiceImpl;
-
-    public ConnectionController(JwtUtil jwtUtil, ConnectionServiceImpl connectionServiceImpl) {
+    SimpMessagingTemplate messagingTemplate;
+    public ConnectionController(JwtUtil jwtUtil, ConnectionServiceImpl connectionServiceImpl, SimpMessagingTemplate messagingTemplate) {
         this.jwtUtil = jwtUtil;
         this.connectionServiceImpl = connectionServiceImpl;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @GetMapping("/retrieveconnectionrequest")
@@ -36,6 +38,7 @@ public class ConnectionController {
                 System.out.println(con.toString());
                 connectionDto.add(new ConexaoDTO(con.getSolicitante().getUniqueCode(),con.getSolicitante().getNome()));
             }
+
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("server",connectionDto));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("server","Invalid token"));
@@ -44,9 +47,9 @@ public class ConnectionController {
 
     @PatchMapping(value = "/answerconnectionrequest")
     public ResponseEntity<String> answerConnectionRequest(@CookieValue(value = "eventToken") String token, @RequestBody AlphaConnectionRequest connectionRequest) {
-        System.out.println(connectionRequest.toString());
         Map<String,Object> validatedToken = jwtUtil.extractClaim(token);
         if (validatedToken.get("error") == null) {
+            System.out.println(validatedToken.get("unique_code"));
             if(validatedToken.get("unique_code").equals(connectionRequest.getTo())){
                 connectionServiceImpl.answerConnectionRequest(connectionRequest.getTo(),connectionRequest.getFrom(),connectionRequest.getStatus());
                 return ResponseEntity.ok("Connection request " + connectionRequest.getStatus() + " successfully");

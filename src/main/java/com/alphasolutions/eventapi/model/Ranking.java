@@ -4,7 +4,6 @@ package com.alphasolutions.eventapi.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import javax.swing.tree.ExpandVetoException;
 
 @Entity
 @Table(name = "ranking")
