@@ -1,10 +1,8 @@
 package com.alphasolutions.eventapi.service;
 
-import com.alphasolutions.eventapi.model.Evento;
-import com.alphasolutions.eventapi.model.Role;
-import com.alphasolutions.eventapi.model.User;
-import com.alphasolutions.eventapi.model.UserDTO;
+import com.alphasolutions.eventapi.model.*;
 import com.alphasolutions.eventapi.repository.EventoRepository;
+import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.RoleRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.JwtUtil;
@@ -21,23 +19,26 @@ public class UserServiceImpl implements UserService {
     private final EventoRepository eventoRepository;
     private final RoleRepository roleRepository;
     private final JwtUtil jwtUtil;
+    private final RankingRepository rankingRepository;
 
-    public UserServiceImpl(UserRepository userRepository, EventoRepository eventoRepository, RoleRepository roleRepository, JwtUtil jwtUtil) {
+    public UserServiceImpl(UserRepository userRepository, EventoRepository eventoRepository, RoleRepository roleRepository, JwtUtil jwtUtil, RankingRepository rankingRepository) {
         this.userRepository = userRepository;
         this.eventoRepository = eventoRepository;
         this.roleRepository = roleRepository;
         this.jwtUtil = jwtUtil;
+        this.rankingRepository = rankingRepository;
     }
 
     @Override
     @Transactional
     public User createUser(UserDTO userDTO) {
-
         if(userRepository.findById(userDTO.getId()).isEmpty()) {
             Evento evento = eventoRepository.findById(1).orElse(null);
             Role role = roleRepository.findById(2L).orElse(null);
             User user = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getUniqueCode());
-            return userRepository.save(user);
+            userRepository.save(user);
+            rankingRepository.save(new Ranking(eventoRepository.findById(1).orElse(null),user));
+            return user;
         }
         return userRepository.findById(userDTO.getId()).orElse(null);
     }

@@ -15,7 +15,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 CorsRegistration corsRegistration = registry.addMapping("/**")
-                        .allowedOrigins("https://localhost:5173","http://localhost:5173")
+                        .allowedOrigins("https://localhost:5173","http://localhost:5173", "http://eventfy.local:5173","https://192.168.18.94.nip.io:5173")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("*")
                         .allowCredentials(true);
