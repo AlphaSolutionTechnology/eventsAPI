@@ -16,4 +16,7 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     @Transactional
     @Query("UPDATE Ranking r SET r.conexoes = r.conexoes + 1 WHERE r.user.id = :userId")
     void incrementConnection(@Param("userId") String userId);
+
+    @Query("SELECT r.conexoes FROM Ranking r WHERE r.user.id = :userId")
+    int findConexoesByUserId(String userId);
 }

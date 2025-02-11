@@ -15,4 +15,5 @@ public interface ConexaoRepository extends JpaRepository<Conexao, Integer> {
     Conexao findBySolicitanteAndSolicitado(User solicitante,User solicitado);
 
     List<Conexao> findAllBySolicitadoAndStatus(User solicitado, String status);
+
 }
