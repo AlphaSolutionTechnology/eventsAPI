@@ -1,6 +1,9 @@
 package com.alphasolutions.eventapi.controller;
+
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.DeleteExchange;
+
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.PalestraIdsDTO;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
