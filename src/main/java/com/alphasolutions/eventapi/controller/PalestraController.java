@@ -1,6 +1,7 @@
 package com.alphasolutions.eventapi.controller;
 
-import org.springframework.web.bind.annotation.RestController;
+import com.alphasolutions.eventapi.utils.JwtUtil;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.DeleteExchange;
 
 import com.alphasolutions.eventapi.model.Palestra;
@@ -9,36 +10,56 @@ import com.alphasolutions.eventapi.repository.PalestraRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PostMapping;
-
-
 
 
 @RestController
 @RequestMapping("/api/palestra")
 public class PalestraController {
-    
-private PalestraRepository palestraRepository;
 
-public PalestraController(PalestraRepository palestraRepository){
+    private final JwtUtil jwtUtil;
+    private PalestraRepository palestraRepository;
+
+public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil){
     this.palestraRepository = palestraRepository;
+    this.jwtUtil = jwtUtil;
 }
 
 @GetMapping("/lista")
-public List<Palestra> PalestraList(){
+public List<Palestra> PalestraList(@CookieValue(value = "eventToken",required = true) String eventToken){
+    if(eventToken == null || eventToken.isEmpty()) {
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token invalido");
+    }
+    if(eventToken != null && !eventToken.isEmpty()) {
+        Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
+        if(tokenVerified.get("error") != null){
+            return null;
+        }
+        if(tokenVerified.get("role").equals("Participante")) {
+            return null;
+        }
+    }
     return palestraRepository.findAll();
 }
 
 
 @PostMapping("/criar")
-public ResponseEntity<?> createPalestra(@RequestBody Palestra palestra) {
-
+public ResponseEntity<?> createPalestra(@CookieValue(value = "eventToken",required = true) String eventToken ,@RequestBody Palestra palestra) {
+    if(eventToken == null || eventToken.isEmpty()) {
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token invalido");
+    }
+    if(eventToken != null && !eventToken.isEmpty()) {
+        Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
+        if(tokenVerified.get("error") != null){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(tokenVerified.get("error").toString());
+        }
+        if(tokenVerified.get("role").equals("Participante")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não é palestrante");
+        }
+    }
     if (palestraRepository.existsByTema(palestra.getTema())) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body("Uma palestra com este tema já existe.");
