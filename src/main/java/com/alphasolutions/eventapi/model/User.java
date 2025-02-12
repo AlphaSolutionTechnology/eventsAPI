@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "\"user\"")
@@ -35,4 +38,16 @@ public class User {
     @Column(name = "unique_code",updatable = false,nullable = false)
     private String uniqueCode;
 
-}
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP(3) DEFAULT NOW()")
+    private Instant createdAt;
+
+    public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode) {
+        this.id = id;
+        this.nome = nome;
+        this.role = role;
+        this.evento = evento;
+        this.email = email;
+        this.redeSocial = redeSocial;
+        this.uniqueCode = uniqueCode;
+    }}

@@ -2,15 +2,17 @@ package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.model.Questoes;
 import com.alphasolutions.eventapi.model.QuestoesDTO;
+import com.alphasolutions.eventapi.model.ResultDTO;
 import com.alphasolutions.eventapi.service.QuestoesService;
 
+import com.alphasolutions.eventapi.service.ResultService;
 import com.alphasolutions.eventapi.utils.JwtUtil;
-import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.transform.Result;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,10 +24,24 @@ public class QuestoesController {
 
     private final QuestoesService questoesService;
     private final JwtUtil jwtUtil;
+    private final ResultService resultService;
 
-    public QuestoesController(QuestoesService questoesService, JwtUtil jwtUtil) {
+    public QuestoesController(QuestoesService questoesService, JwtUtil jwtUtil, ResultService resultService) {
         this.questoesService = questoesService;
         this.jwtUtil = jwtUtil;
+        this.resultService = resultService;
+    }
+
+    @PostMapping("/registerresult")
+    public ResponseEntity<?> registerResult(@CookieValue(value = "eventToken") String eventToken, @RequestBody ResultDTO result) {
+        Map<String, Object> verifiedToken = jwtUtil.extractClaim(eventToken);
+        if(verifiedToken.get("error") != null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + verifiedToken.get("error"));
+        }
+        if (resultService.saveResult(result,verifiedToken.get("id").toString())) {
+            return ResponseEntity.status(HttpStatus.OK).body("Salvo com sucesso!");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     @GetMapping
@@ -57,7 +73,7 @@ public class QuestoesController {
 
         try{
             if(jwtUtil.extractClaim(token).get("error") != null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             questoesService.deleteById(idQuestao);
             return ResponseEntity.ok().build();

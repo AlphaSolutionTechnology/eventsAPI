@@ -4,6 +4,7 @@ import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.ConexaoRepository;
 import com.alphasolutions.eventapi.repository.RankingRepository;
+import com.alphasolutions.eventapi.repository.RankingViewRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
 import com.alphasolutions.eventapi.websocket.notification.Status;
@@ -19,14 +20,16 @@ public class ConnectionServiceImpl implements ConnectionService {
 
     private final RankingRepository rankingRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RankingViewRepository rankingViewRepository;
     public ConexaoRepository conexaoRepository;
     public UserRepository userRepository;
 
-    public ConnectionServiceImpl(ConexaoRepository conexaoRepository, UserRepository userRepository, RankingRepository rankingRepository,SimpMessagingTemplate messagingTemplate) {
+    public ConnectionServiceImpl(ConexaoRepository conexaoRepository, UserRepository userRepository, RankingRepository rankingRepository, SimpMessagingTemplate messagingTemplate, RankingViewRepository rankingViewRepository) {
         this.conexaoRepository = conexaoRepository;
         this.userRepository = userRepository;
         this.rankingRepository = rankingRepository;
         this.messagingTemplate = messagingTemplate;
+        this.rankingViewRepository = rankingViewRepository;
     }
 
     @Override
@@ -63,8 +66,6 @@ public class ConnectionServiceImpl implements ConnectionService {
 
         }
         conexaoRepository.save(new Conexao(solicitante, solicitado,status.getStatus()));
-        rankingRepository.incrementConnection(solicitante.getId());
-        rankingRepository.incrementConnection(solicitado.getId());
         return new NotificationResponseMessage("Sucesso!");
     }
 
@@ -79,7 +80,10 @@ public class ConnectionServiceImpl implements ConnectionService {
         if(status.equals(Status.ACCEPTED.getStatus())) {
             conexao.setStatus(Status.ACCEPTED.getStatus());
             conexaoRepository.save(conexao);
-            messagingTemplate.convertAndSendToUser(from,"/queue/notification",Map.of("status",solicitado.getNome().split(" ")[0] +" "+ solicitado.getNome().split(" ")[1] +(" aceitou sua solicitação")));
+            rankingRepository.incrementConnection(solicitante.getId());
+            rankingRepository.incrementConnection(solicitado.getId());
+            messagingTemplate.convertAndSend("/topic/ranking", Map.of("type","ranking_update"));
+
         }else{
             conexao.setStatus(Status.DECLINED.getStatus());
             conexaoRepository.delete(conexao);
