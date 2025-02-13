@@ -22,4 +22,7 @@ public class Palestra {
     @ManyToOne
     @JoinColumn(name = "id_evento", referencedColumnName = "id_evento", nullable = false)
     private Evento evento;
+
+    @Column(name="unique_code", unique = true)
+    private String uniqueCode;
 }

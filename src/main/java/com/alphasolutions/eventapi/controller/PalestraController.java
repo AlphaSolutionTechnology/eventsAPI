@@ -2,13 +2,16 @@ package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.service.annotation.DeleteExchange;
+
 
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.PalestraIdsDTO;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
+import com.alphasolutions.eventapi.service.PalestraService;
+
 import java.util.List;
 import java.util.Map;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,27 +23,45 @@ public class PalestraController {
 
     private final JwtUtil jwtUtil;
     private PalestraRepository palestraRepository;
+    private final PalestraService palestraService;
 
-public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil){
+public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil, PalestraService palestraService){
     this.palestraRepository = palestraRepository;
     this.jwtUtil = jwtUtil;
+    this.palestraService = palestraService;
 }
 
 @GetMapping("/lista")
-public List<Palestra> PalestraList(@CookieValue(value = "eventToken",required = true) String eventToken){
+public ResponseEntity<?> PalestraList(@CookieValue(value = "eventToken",required = true) String eventToken){
     if(eventToken == null || eventToken.isEmpty()) {
         ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token invalido");
     }
-    if(eventToken != null && !eventToken.isEmpty()) {
+   
         Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
+
         if(tokenVerified.get("error") != null){
-            return null;
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
         }
+
         if(tokenVerified.get("role").equals("Participante")) {
-            return null;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: participantes não podem ver a lista de palestras.");
         }
+    
+        List<Palestra> palestras =  palestraRepository.findAll();
+
+    return ResponseEntity.ok(palestras);
+}
+
+@GetMapping("/{uniqueCode}")
+public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode){
+
+    if(palestraService.verificarPalestra(uniqueCode)){
+        return ResponseEntity.ok().build();
     }
-    return palestraRepository.findAll();
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada");
+
+
 }
 
 
@@ -63,7 +84,8 @@ public ResponseEntity<?> createPalestra(@CookieValue(value = "eventToken",requir
             .body("Uma palestra com este tema já existe.");
     }
 
-    Palestra novaPalestra = palestraRepository.save(palestra);
+    Palestra novaPalestra = palestraService.criarPalestra(palestra);
+
     return ResponseEntity.status(HttpStatus.CREATED).body(novaPalestra);
 }
 
