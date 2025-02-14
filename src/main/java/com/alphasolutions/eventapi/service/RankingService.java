@@ -34,5 +34,16 @@ public class RankingService {
     public List<RankingView> getRankingByPalestra(Long idPalestra) {
         return rankingViewRepository.findAllByPalestraId(idPalestra);
     }
+
+    public void removerUsuarioDoRanking(Palestra palestra, User user) {
+        if (rankingRepository.existsByPalestraAndUser(palestra, user)) {
+            Ranking ranking = rankingRepository.findByPalestraAndUser(palestra, user);
+            rankingRepository.delete(ranking);
+        }
+    }
     
+    public boolean isUsuarioInscritoNoRanking(Palestra palestra, User user) {
+        return rankingRepository.existsByPalestraAndUser(palestra, user);
+    }
+  
 }

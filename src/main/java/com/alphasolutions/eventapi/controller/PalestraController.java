@@ -98,6 +98,42 @@ public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @Cooki
     return ResponseEntity.ok(response);
 }
 
+@GetMapping("/verificarInscricao/{idPalestra}")
+public ResponseEntity<?> verificarInscricao(@PathVariable Long idPalestra, @CookieValue(value = "eventToken", required = true) String eventToken) {
+
+    // Verificação se o token é válido
+    if (eventToken == null || eventToken.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token inválido.");
+    }
+
+    Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
+    if (tokenVerified.get("error") != null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
+    }
+
+    // Buscar o usuário no banco de dados com base no ID do token
+    String userId = tokenVerified.get("id").toString();
+    Optional<User> user = userRepository.findById(userId);
+    if (user.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
+    }
+
+    // Verificar se o usuário está inscrito na palestra
+    Optional<Palestra> palestra = palestraRepository.findById(idPalestra);
+    if (palestra.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
+    }
+
+    // Verificar se o usuário está no ranking da palestra (presumindo que o ranking é a forma de inscrição)
+    boolean isInscrito = rankingService.isUsuarioInscritoNoRanking(palestra.get(), user.get());
+    
+    if (isInscrito) {
+        return ResponseEntity.ok("Usuário está inscrito na palestra.");
+    } else {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário não está inscrito nesta palestra.");
+    }
+}
+
 
 
 
@@ -144,6 +180,37 @@ public ResponseEntity<?> deletePalestras(@RequestBody PalestraIdsDTO dto) {
     }
 }
 
+@DeleteMapping("/desinscrever/{idPalestra}")
+public ResponseEntity<?> desinscreverUsuarioDaPalestra(@PathVariable Long idPalestra, @CookieValue(value = "eventToken", required = true) String eventToken) {
+
+    if (eventToken == null || eventToken.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token inválido");
+    }
+
+   
+    Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
+    if (tokenVerified.get("error") != null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
+    }
+
+   
+    String userId = tokenVerified.get("id").toString();
+    Optional<User> user = userRepository.findById(userId);
+    if (user.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
+    }
+
+    
+    Optional<Palestra> palestra = palestraRepository.findById(idPalestra);
+    if (palestra.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
+    }
+
+    // Remover usuário do ranking da palestra
+    rankingService.removerUsuarioDoRanking(palestra.get(), user.get());
+
+    return ResponseEntity.ok("Usuário desinscrito da palestra e removido do ranking.");
+}
 
 
 

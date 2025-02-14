@@ -28,4 +28,5 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     int findConexoesByUserId(String userId);
 
     boolean existsByPalestraAndUser(Palestra palestra, User user);
+    Ranking findByPalestraAndUser(Palestra palestra, User user);
 }

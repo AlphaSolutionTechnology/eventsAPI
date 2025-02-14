@@ -3,6 +3,7 @@ package com.alphasolutions.eventapi.service;
 
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
+import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
 import com.alphasolutions.eventapi.utils.UniqueCodeUtil;
 
@@ -11,9 +12,11 @@ public class PalestraService {
     
 
     private final PalestraRepository palestraRepository;
+    private final RankingService rankingService;
 
-    public PalestraService(PalestraRepository palestraRepository){
+    public PalestraService(PalestraRepository palestraRepository, RankingService rankingService){
         this.palestraRepository = palestraRepository;
+        this.rankingService = rankingService;
     }
 
     
@@ -35,5 +38,11 @@ public class PalestraService {
     public boolean verificarPalestra(String uniqueCode){
         return palestraRepository.existsByUniqueCode(uniqueCode);
     }
+
+    public void desinscreverUsuarioDaPalestra(Palestra palestra, User user) {       
+        rankingService.removerUsuarioDoRanking(palestra, user);
+    }
+
+    
 
 }
