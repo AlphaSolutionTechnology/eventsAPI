@@ -128,7 +128,7 @@ public ResponseEntity<?> verificarInscricao(@PathVariable Long idPalestra, @Cook
     boolean isInscrito = rankingService.isUsuarioInscritoNoRanking(palestra.get(), user.get());
     
     if (isInscrito) {
-        return ResponseEntity.ok("Usuário está inscrito na palestra.");
+        return ResponseEntity.ok(Map.of("inscrito", isInscrito));
     } else {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário não está inscrito nesta palestra.");
     }
