@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
             Role role = roleRepository.findById(2L).orElse(null);
             User user = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getUniqueCode());
             userRepository.save(user);
-            rankingRepository.save(new Ranking(eventoRepository.findById(1).orElse(null),user));
+            // rankingRepository.save(new Ranking(eventoRepository.findById(1).orElse(null),user));
             return user;
         }
         return userRepository.findById(userDTO.getId()).orElse(null);

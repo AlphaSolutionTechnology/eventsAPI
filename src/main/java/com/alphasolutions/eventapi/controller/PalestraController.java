@@ -6,12 +6,16 @@ import org.springframework.web.bind.annotation.*;
 
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.PalestraIdsDTO;
+import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
+import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.service.PalestraService;
+import com.alphasolutions.eventapi.service.RankingService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +28,15 @@ public class PalestraController {
     private final JwtUtil jwtUtil;
     private PalestraRepository palestraRepository;
     private final PalestraService palestraService;
+    private final UserRepository userRepository;
+    private final RankingService rankingService;
 
-public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil, PalestraService palestraService){
+public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil, PalestraService palestraService, UserRepository userRepository, RankingService rankingService){
     this.palestraRepository = palestraRepository;
     this.jwtUtil = jwtUtil;
     this.palestraService = palestraService;
+    this.userRepository = userRepository;
+    this.rankingService = rankingService;
 }
 
 @GetMapping("/lista")
@@ -52,17 +60,45 @@ public ResponseEntity<?> PalestraList(@CookieValue(value = "eventToken",required
     return ResponseEntity.ok(palestras);
 }
 
-@GetMapping("/{uniqueCode}")
-public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode){
+@GetMapping("/{uniqueCode}") //usuario se conecta a palestra
+public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @CookieValue(value = "eventToken", required = true) String eventToken) {
 
-    if(palestraService.verificarPalestra(uniqueCode)){
-        return ResponseEntity.ok().build();
+
+    if (eventToken == null || eventToken.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token inválido");
     }
 
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada");
+    Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
 
+    if (tokenVerified.get("error") != null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
+    }
 
+    // Buscar usuário pelo token
+    String userId = tokenVerified.get("id").toString();
+    Optional<User> user = userRepository.findById(userId);
+    if (user.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
+    }
+
+    // Buscar palestra pelo código
+    Optional<Palestra> palestra = palestraRepository.findByUniqueCode(uniqueCode.trim());
+    if (palestra.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
+    }
+
+    // Inscrever usuário automaticamente no ranking da palestra
+    rankingService.inscreverUsuarioNoRanking(palestra.get(), user.get());
+
+     // Retorna o ID da palestra para o frontend
+    Map<String, Object> response = new HashMap<>();
+    response.put("message", "Palestra validada e usuário inscrito no ranking.");
+    response.put("idPalestra", palestra.get().getId());  // Retorna o ID da palestra
+
+    return ResponseEntity.ok(response);
 }
+
+
 
 
 @PostMapping("/criar")

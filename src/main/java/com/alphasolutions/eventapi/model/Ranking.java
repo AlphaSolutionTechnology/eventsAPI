@@ -16,10 +16,12 @@ public class Ranking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_ranking")
-    private Long id;
+    private Long id; 
+
     @ManyToOne
-    @JoinColumn(name = "id_evento", referencedColumnName = "id_evento", nullable = true)
-    private Evento evento;
+    @JoinColumn(name = "id_palestra", referencedColumnName = "id_palestra", nullable = false)
+    private Palestra palestra;
+
     @ManyToOne
     @JoinColumn(name = "id_user", referencedColumnName = "id_user", nullable = false)
     private User user;
@@ -36,8 +38,8 @@ public class Ranking {
     @Column(name = "pontuacao_total", nullable = false)
     private Integer pontuacaoTotal;
 
-    public Ranking(Evento evento, User user) {
-        this.evento = evento;
+    public Ranking(Palestra palestra, User user) {
+        this.palestra = palestra;
         this.user = user;
         setColocacao(0);
         setConexoes(0);

@@ -1,6 +1,8 @@
 package com.alphasolutions.eventapi.repository;
 
+import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.Ranking;
+import com.alphasolutions.eventapi.model.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,4 +26,6 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
 
     @Query("SELECT r.conexoes FROM Ranking r WHERE r.user.id = :userId")
     int findConexoesByUserId(String userId);
+
+    boolean existsByPalestraAndUser(Palestra palestra, User user);
 }
