@@ -13,7 +13,7 @@ import java.util.*;
 @RequestMapping("/api/chat")
 public class GroqController {
 
-    @Value("${groq.api.key}") // Pega a chave da API do application.properties
+    @Value("${groq.api.key}")
     private String groqApiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
