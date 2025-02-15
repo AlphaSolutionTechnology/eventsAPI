@@ -35,12 +35,18 @@ public class User {
     @Column(name = "redesocial", length = 80)
     private String redeSocial;
 
+    @Column(name = "password", nullable = true)
+    private String password;
+
     @Column(name = "unique_code",updatable = false,nullable = false)
     private String uniqueCode;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP(3) DEFAULT NOW()")
     private Instant createdAt;
+
+    @Column(name = "is_email_verified" ,nullable = true)
+    private Boolean isEmailVerified;
 
     public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode) {
         this.id = id;
@@ -50,4 +56,16 @@ public class User {
         this.email = email;
         this.redeSocial = redeSocial;
         this.uniqueCode = uniqueCode;
-    }}
+    }
+
+    public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode) {
+        this.id = id;
+        this.nome = username;
+        this.role = role;
+        this.evento = evento;
+        this.email = email;
+        this.redeSocial = redesocial;
+        this.password = password;
+        this.uniqueCode = uniqueCode;
+    }
+}

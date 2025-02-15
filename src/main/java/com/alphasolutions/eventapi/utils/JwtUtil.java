@@ -84,12 +84,10 @@ public class JwtUtil {
         return Map.of("error","Invalid Token");
     }
 
-
     public Payload verifyGoogleToken(String googleToken) {
         try {
             TokenVerifier tokenVerifier = TokenVerifier.newBuilder().setAudience(clientID).setIssuer("https://accounts.google.com").build();
             var verifiedToken = tokenVerifier.verify(googleToken);
-
             return verifiedToken.getPayload();
 
         }catch (Exception e) {

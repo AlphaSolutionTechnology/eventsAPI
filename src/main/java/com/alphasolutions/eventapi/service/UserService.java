@@ -13,7 +13,5 @@ public interface UserService {
 
     UserDTO getUserById(String id);
 
-    List<UserDTO> getAllUsers();
-
-    boolean signIn(String token);
+    User checkEmailAndPasswordValidityAndReturnUser(String email, String password);
 }

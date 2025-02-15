@@ -4,7 +4,7 @@ package com.alphasolutions.eventapi.service;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
-import com.alphasolutions.eventapi.utils.UniqueCodeUtil;
+import com.alphasolutions.eventapi.utils.IdentifierGenerator;
 
 @Service
 public class PalestraService {
@@ -23,7 +23,7 @@ public class PalestraService {
         String uniqueCode;
 
         do {
-            uniqueCode = UniqueCodeUtil.generateUniqueCode(6); 
+            uniqueCode = IdentifierGenerator.generateIdentity(6);
         } while (palestraRepository.existsByUniqueCode(uniqueCode)); // Verifica se o código já existe
 
         palestra.setUniqueCode(uniqueCode);

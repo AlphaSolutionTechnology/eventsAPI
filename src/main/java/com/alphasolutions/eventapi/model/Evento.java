@@ -1,12 +1,16 @@
 package com.alphasolutions.eventapi.model;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Entity
 @Table(name = "evento")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Evento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +20,5 @@ public class Evento {
     @Column(name = "nome", nullable = false, length = 150)
     private String nome;
 
-    @Column(name = "data", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date data;
+
 }
