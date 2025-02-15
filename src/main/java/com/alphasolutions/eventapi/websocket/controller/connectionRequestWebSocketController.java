@@ -32,7 +32,6 @@ public class connectionRequestWebSocketController {
         }
         response.setTo(principal.getName());
         messagingTemplate.convertAndSendToUser(principal.getName(),"/queue/notification" ,response);
-        System.out.println(response.getMessage());
         if(response.getMessage().equals("Sucesso!")){
             messagingTemplate.convertAndSendToUser(message.getTo(),"/queue/notification" , Map.of("to",message.getTo(), "from", principal.getName(),"message","quer se conectar a você","name",(senderName[0] + " "+ senderName[1])));
         }

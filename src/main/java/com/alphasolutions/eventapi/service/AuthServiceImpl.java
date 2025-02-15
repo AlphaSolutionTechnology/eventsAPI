@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String auhenticate(String token) {
         Map<String,Object> claim =  jwtUtil.extractClaim(token);
-        if(claim.get("error") != null){
+        if(claim.get("error") == null){
             return token;
         }
         throw new InvalidTokenException("Token invalido");
