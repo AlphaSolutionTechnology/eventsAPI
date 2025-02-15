@@ -1,8 +1,10 @@
 package com.alphasolutions.eventapi.controller;
 
+import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.model.Questoes;
 import com.alphasolutions.eventapi.model.QuestoesDTO;
 import com.alphasolutions.eventapi.model.ResultDTO;
+import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.QuestoesService;
 
 import com.alphasolutions.eventapi.service.ResultService;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.transform.Result;
+import java.rmi.NoSuchObjectException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,26 +30,29 @@ public class QuestoesController {
     private final QuestoesService questoesService;
     private final JwtUtil jwtUtil;
     private final ResultService resultService;
+    private final AuthService authService;
 
-    public QuestoesController(QuestoesService questoesService, JwtUtil jwtUtil, ResultService resultService) {
+    public QuestoesController(QuestoesService questoesService, JwtUtil jwtUtil, ResultService resultService, AuthService authService) {
         this.questoesService = questoesService;
         this.jwtUtil = jwtUtil;
         this.resultService = resultService;
+        this.authService = authService;
     }
 
     @PostMapping("/registerresult")
     public ResponseEntity<?> registerResult(@CookieValue(value = "eventToken") String eventToken, @RequestBody ResultDTO result) {
-        Map<String, Object> verifiedToken = jwtUtil.extractClaim(eventToken);
-        if(verifiedToken.get("error") != null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + verifiedToken.get("error"));
+        try {
+            authService.auhenticate(eventToken);
+            resultService.saveResult(result,jwtUtil.extractClaim(eventToken).get("id").toString());
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (InvalidTokenException invalidTokenException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + invalidTokenException.getMessage());
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
-        if (resultService.saveResult(result,verifiedToken.get("id").toString())) {
-            return ResponseEntity.status(HttpStatus.OK).body("Salvo com sucesso!");
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-    @GetMapping
+    @GetMapping("/retrieveallquestions")
     public List<Map<String, Object>> getAllQuestoes() {
         return questoesService.findAll().stream()
                 .map(questao -> Map.of(
@@ -58,37 +64,41 @@ public class QuestoesController {
                 .collect(Collectors.toList());
     }
 
-   @GetMapping("/{idPalestra}")
-   public ResponseEntity<List<Questoes>> getQuestoesByPalestra(@PathVariable Long idPalestra) {
-    List<Questoes> questoes = questoesService.findQuestoesByPalestra(idPalestra); 
+    @GetMapping("/{idPalestra}")
+    public ResponseEntity<List<Questoes>> getQuestoesByPalestra(@PathVariable Long idPalestra) {
+    List<Questoes> questoes = questoesService.findQuestoesByPalestra(idPalestra);
     return ResponseEntity.ok(questoes);
-   }
-   
+    }
 
-
-    @PostMapping
+    @PostMapping("/createquestion")
     public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes) {
         return ResponseEntity.ok(questoesService.save(questoes));
     }
 
     @DeleteMapping("/delete/{idQuestao}")
     public ResponseEntity<String> deleteQuestao(@CookieValue(value = "eventToken") String token,@PathVariable Long idQuestao) {
-
         try{
-            if(jwtUtil.extractClaim(token).get("error") != null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
+            authService.auhenticate(token);
             questoesService.deleteById(idQuestao);
             return ResponseEntity.ok().build();
+        }catch (InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + e.getMessage());
+        }catch (NoSuchObjectException noSuchObjectException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + noSuchObjectException.getMessage());
         }catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
-    @PutMapping(value = "/update",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> updateQuestao(@RequestBody QuestoesDTO questoes) {
+    @PutMapping(value = "/updatequestion",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updateQuestao(@CookieValue("eventToken") String eventToken, @RequestBody QuestoesDTO questoes) {
         try{
+            authService.auhenticate(eventToken);
             questoesService.updateQuestoes(questoes);
             return ResponseEntity.ok().build();
+        }catch (InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + e.getMessage());
+        }catch (NoSuchObjectException noSuchObjectException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + noSuchObjectException.getMessage());
         }catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

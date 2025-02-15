@@ -5,6 +5,7 @@ import com.alphasolutions.eventapi.model.QuestoesDTO;
 import com.alphasolutions.eventapi.repository.QuestoesRepository;
 import org.springframework.stereotype.Service;
 
+import java.rmi.NoSuchObjectException;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +34,7 @@ public class QuestoesService {
         if (questoesRepository.existsById(id)) {
             questoesRepository.deleteById(id);
         }else{
-            throw new Exception("Não existe esta questão!");
+            throw new NoSuchObjectException("Questions not found");
         }
 
     }
@@ -41,7 +42,7 @@ public class QuestoesService {
     public void updateQuestoes(QuestoesDTO questoes) throws Exception {
         Questoes questao = questoesRepository.findById(questoes.getIdQuestao()).orElse(null);
         if(questao == null) {
-            throw new Exception("Questão não encontrada");
+            throw new NoSuchObjectException("Questão não encontrada");
         }
 
         Questoes newQuestion = new Questoes(questoes.getIdQuestao(),questoes.getEnunciado(),questoes.getChoices(),questoes.getCorrectAnswer(),questoes.getIdPalestra());
