@@ -1,10 +1,8 @@
 package com.alphasolutions.eventapi.service;
 
+import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import com.alphasolutions.eventapi.model.*;
-import com.alphasolutions.eventapi.repository.EventoRepository;
-import com.alphasolutions.eventapi.repository.RankingRepository;
-import com.alphasolutions.eventapi.repository.RoleRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.utils.IdentifierGenerator;
@@ -13,28 +11,27 @@ import com.google.api.client.json.webtoken.JsonWebToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final RankingRepository rankingRepository;
     private final PasswordUtils passwordUtils;
     private final IdentifierGenerator identifierGenerator;
 
-    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, RankingRepository rankingRepository, PasswordUtils passwordUtils, IdentifierGenerator identifierGenerator) {
+    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, PasswordUtils passwordUtils, IdentifierGenerator identifierGenerator) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
-        this.rankingRepository = rankingRepository;
         this.passwordUtils = passwordUtils;
         this.identifierGenerator = identifierGenerator;
     }
 
     @Override
     @Transactional
-    public User createUser(UserDTO userDTO) {
+    public void createUser(UserDTO userDTO) {
+        if(isEmailAlreadyExists(userDTO.getEmail())){
+            throw new UserAlreadyExistsException("Já existe uma conta criada com este email!");
+        }
         if(userDTO.getId() == null) {
             String id;
             String uniqueCode;
@@ -52,35 +49,13 @@ public class UserServiceImpl implements UserService {
         if(userInDatabase == null) {
             Evento evento = new Evento(1L,"Primeiro Evento");
             Role role = new Role(2L,"Participante");
-            User user = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getUniqueCode());
-            userRepository.save(user);
-            // rankingRepository.save(new Ranking(eventoRepository.findById(1).orElse(null),user));
-            if(userDTO.getPassword() == null) {
-                userRepository.save(user);
-            }else{
-                User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
-                userRepository.save(userWithPassword);
-            }
-            return user;
+            User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
+            userRepository.save(userWithPassword);
         }
-        return userRepository.findById(userDTO.getId()).orElse(null);
-
     }
 
     @Override
-    public UserDTO getUserById(String id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found");
-        }
-        return new UserDTO(user.getId(),user.getNome(), user.getEmail(),null, user.getUniqueCode(), user.getRedeSocial());
-    }
-
-    public String giveUserAnotherToken(User user){
-        return jwtUtil.generateToken(user);
-    }
-
-    public User retrieveUserById(String googleId) {
+    public User getUserById(String googleId) {
         return userRepository.findById(googleId).orElse(null);
     }
 
@@ -88,6 +63,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsByEmail(email);
     }
 
+    @Override
     public User checkEmailAndPasswordValidityAndReturnUser(String email, String password) {
         User user = userRepository.findByEmail(email).orElse(null);
         if(user == null) {

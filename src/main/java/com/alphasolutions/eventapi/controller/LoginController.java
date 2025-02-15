@@ -1,18 +1,19 @@
 package com.alphasolutions.eventapi.controller;
 
+import com.alphasolutions.eventapi.exception.InvalidTokenException;
+import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.model.UserDTO;
-import com.alphasolutions.eventapi.service.CookieService;
-import com.alphasolutions.eventapi.service.UserServiceImpl;
+import com.alphasolutions.eventapi.service.*;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.google.api.client.json.webtoken.JsonWebToken.Payload;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Map;
 
@@ -20,68 +21,57 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class LoginController {
 
-    private final UserServiceImpl userServiceImpl;
     private final CookieService cookieService;
+    private final AuthService authService;
+    private final UserService userService;
+    private final GoogleAuthService googleAuthService;
     public JwtUtil jwtUtil;
 
-    public LoginController(JwtUtil jwtUtil, UserServiceImpl userServiceImpl, CookieService cookieService) {
+    public LoginController(JwtUtil jwtUtil, CookieService cookieService, AuthService authService, UserService userService, GoogleAuthService googleAuthService) {
         this.jwtUtil = jwtUtil;
-        this.userServiceImpl = userServiceImpl;
         this.cookieService = cookieService;
+        this.authService = authService;
+        this.userService = userService;
+        this.googleAuthService = googleAuthService;
     }
 
     @PostMapping(path = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpServletResponse response) {
         try {
-            User user = userServiceImpl.checkEmailAndPasswordValidityAndReturnUser(userDTO.getEmail(), userDTO.getPassword());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-            }
-            String eventToken = jwtUtil.generateToken(user);
+            String eventToken = authService.authenticate(userDTO.getEmail(), userDTO.getPassword());
             response.addHeader("Set-Cookie",cookieService.createCookie(eventToken).toString());
-            return ResponseEntity.ok().body("User logged in successfullyf");
-
+            return ResponseEntity.ok().body(Map.of("data",jwtUtil.extractClaim(eventToken)));
         }catch (UserNotFoundException userNotFoundException) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(userNotFoundException.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", userNotFoundException.getMessage()));
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", e.getMessage()));
         }
 
     }
 
     @PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO, HttpServletResponse response) {
-        if(userServiceImpl.isEmailAlreadyExists(userDTO.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Já existe um usuário cadastrado com este email");
-        }
-        try{
-            userServiceImpl.createUser(userDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
+        try {
+           userService.createUser(userDTO);
+           return ResponseEntity.status(HttpStatus.CREATED).build();
+        }catch (UserAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
     @PostMapping("/google")
     public ResponseEntity<?> authenticateWithGoogle(@RequestBody Map<String,String> body, HttpServletResponse response, @CookieValue(value = "eventToken", required = false) String existingToken) {
         try{
-            if(existingToken != null) {
-                Map<String,Object> alphaTokenVerifier = jwtUtil.extractClaim(existingToken);
-                if (alphaTokenVerifier.get("error") != null) {
-                    return ResponseEntity.ok(alphaTokenVerifier);
-                }
+            if(existingToken != null && !existingToken.isEmpty()) {
+                authService.auhenticate(existingToken);
             }
-            Payload googlePayload = jwtUtil.verifyGoogleToken(body.get("token"));
-            User user = userServiceImpl.retrieveUserById(googlePayload.getSubject());
-            String eventToken;
-            if(user != null)  {
-                eventToken = userServiceImpl.giveUserAnotherToken(user);
-            }else{
-                UserDTO userDTO = userServiceImpl.prepareUserWithGoogleData(googlePayload);
-                eventToken = jwtUtil.generateToken(userServiceImpl.createUser(userDTO));
-            }
+            String eventToken = googleAuthService.createAccountWithGoogle(body.get("token"));
             response.addHeader("Set-Cookie", cookieService.createCookie(eventToken).toString());
             return ResponseEntity.ok().body(jwtUtil.extractClaim(eventToken));
-        } catch (Exception e) {
-            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        } catch (InvalidTokenException invalidTokenException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
 
     }

@@ -8,7 +8,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -21,16 +20,11 @@ import com.google.api.client.json.webtoken.JsonWebToken.Payload;
 @Service
 public class JwtUtil {
 
-    private final UserRepository userRepository;
     @Value("${client.id}")
     private String clientID;
 
     @Value("${jwt.secret-key}")
     private String secretKey;
-
-    public JwtUtil(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
