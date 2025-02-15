@@ -21,8 +21,8 @@ public class QuestoesService {
         return questoesRepository.findAll();
     }
 
-    public Optional<Questoes> findById(Long id) {
-        return questoesRepository.findById(id);
+    public Questoes findById(Long id) {
+        return questoesRepository.findById(id).orElse(null);
     }
 
     public Questoes save(Questoes questoes) {
@@ -52,4 +52,6 @@ public class QuestoesService {
     public List<Questoes> findQuestoesByPalestra(Long idPalestra) {
        return questoesRepository.findByIdPalestra(idPalestra);
 }
+
+    
 }

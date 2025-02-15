@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.xml.transform.Result;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 
 @RestController
@@ -56,12 +58,13 @@ public class QuestoesController {
                 .collect(Collectors.toList());
     }
 
-   @GetMapping("/palestraQuizz")
-   public ResponseEntity<List<Questoes>> getQuestoesByPalestra(@RequestParam Long idPalestra) {
+   @GetMapping("/{idPalestra}")
+   public ResponseEntity<List<Questoes>> getQuestoesByPalestra(@PathVariable Long idPalestra) {
     List<Questoes> questoes = questoesService.findQuestoesByPalestra(idPalestra); 
     return ResponseEntity.ok(questoes);
    }
    
+
 
     @PostMapping
     public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes) {

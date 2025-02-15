@@ -53,13 +53,13 @@ public class UserServiceImpl implements UserService {
             Evento evento = new Evento(1L,"Primeiro Evento");
             Role role = new Role(2L,"Participante");
             User user = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getUniqueCode());
+            userRepository.save(user);
+            // rankingRepository.save(new Ranking(eventoRepository.findById(1).orElse(null),user));
             if(userDTO.getPassword() == null) {
                 userRepository.save(user);
-                rankingRepository.save(new Ranking(evento,user));
             }else{
                 User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
                 userRepository.save(userWithPassword);
-                rankingRepository.save(new Ranking(evento,userWithPassword));
             }
             return user;
         }
