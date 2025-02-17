@@ -12,4 +12,4 @@ public class PalestraIdsDTO {
     public void setIds(List<Long> ids) {
         this.ids = ids;
     }
-    }
+}
