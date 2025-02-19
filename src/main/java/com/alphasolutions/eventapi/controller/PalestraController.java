@@ -79,7 +79,7 @@ public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @Cooki
     Optional<User> user = userRepository.findById(userId);
     if (user.isEmpty()) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
-    }
+    } 
 
     // Buscar palestra pelo código
     Optional<Palestra> palestra = palestraRepository.findByUniqueCode(uniqueCode.trim());
@@ -87,12 +87,23 @@ public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @Cooki
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
     }
 
+    
+    //verifica se usuário está inscrito em alguma palestra
+    boolean isInscrito = palestraService.isUsuarioInscritoNaPalestra(palestra, user);
+
+    if(isInscrito){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário já está inscrito em uma palestra."); 
+    } else {
+        palestraService.inscreverUsuarioNaPalestra(palestra.get().getId(),user.get());
+    }
+
+
     // Inscrever usuário automaticamente no ranking da palestra
-    rankingService.inscreverUsuarioNoRanking(palestra.get(), user.get());
+    // rankingService.inscreverUsuarioNoRanking(palestra.get(), user.get());
 
      // Retorna o ID da palestra para o frontend
     Map<String, Object> response = new HashMap<>();
-    response.put("message", "Palestra validada e usuário inscrito no ranking.");
+    response.put("message", "Palestra validada e usuário inscrito na palestra.");
     response.put("idPalestra", palestra.get().getId());  // Retorna o ID da palestra
 
     return ResponseEntity.ok(response);
@@ -124,8 +135,10 @@ public ResponseEntity<?> verificarInscricao(@PathVariable Long idPalestra, @Cook
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
     }
 
+    boolean isInscrito = palestraService.isUsuarioInscritoNaPalestra(palestra, user);
+
     // Verificar se o usuário está no ranking da palestra (presumindo que o ranking é a forma de inscrição)
-    boolean isInscrito = rankingService.isUsuarioInscritoNoRanking(palestra.get(), user.get());
+    // boolean isInscrito = rankingService.isUsuarioInscritoNoRanking(palestra.get(), user.get());
     
     if (isInscrito) {
         return ResponseEntity.ok(Map.of("inscrito", isInscrito));
@@ -206,8 +219,12 @@ public ResponseEntity<?> desinscreverUsuarioDaPalestra(@PathVariable Long idPale
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
     }
 
-    // Remover usuário do ranking da palestra
-    rankingService.removerUsuarioDoRanking(palestra.get(), user.get());
+    // // Remover usuário do ranking da palestra
+    // rankingService.removerUsuarioDoRanking(palestra.get(), user.get());
+
+    //desinscreve usuario da palestra
+    palestraService.desinscreverUsuarioDaPalestra(palestra.get(), user.get());
+
 
     return ResponseEntity.ok("Usuário desinscrito da palestra e removido do ranking.");
 }

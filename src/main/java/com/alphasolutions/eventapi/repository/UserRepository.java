@@ -3,6 +3,8 @@ package com.alphasolutions.eventapi.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.User;
 
 import java.util.List;
@@ -17,5 +19,9 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     boolean existsByEmail(String email);
 
+    boolean existsByPalestra (Optional<Palestra> palestra);
+
     Optional<User> findByEmail(String email);
+
+    
 }

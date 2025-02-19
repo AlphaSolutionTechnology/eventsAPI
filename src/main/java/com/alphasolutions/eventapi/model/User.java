@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Entity
 @Table(name = "\"user\"")
@@ -47,6 +48,10 @@ public class User {
 
     @Column(name = "is_email_verified" ,nullable = true)
     private Boolean isEmailVerified;
+
+    @ManyToOne
+    @JoinColumn(name = "palestra_atual", referencedColumnName = "id_palestra", nullable = true, updatable = true)
+    private Palestra palestra;
 
     public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode) {
         this.id = id;

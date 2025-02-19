@@ -1,11 +1,15 @@
 package com.alphasolutions.eventapi.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "palestra")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Palestra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,4 +29,10 @@ public class Palestra {
 
     @Column(name="unique_code", unique = true)
     private String uniqueCode;
+
+    public Palestra(Long id, User user){
+        this.id = id;
+        this.user = user;
+    }
 }
+
