@@ -19,8 +19,13 @@ public class Ranking {
     private Long id; 
 
     @ManyToOne
+    @JoinColumn(name = "id_evento", referencedColumnName = "id_evento", nullable = true)
+    private Evento evento;
+
+    @ManyToOne
     @JoinColumn(name = "id_palestra", referencedColumnName = "id_palestra", nullable = false)
     private Palestra palestra;
+
 
     @ManyToOne
     @JoinColumn(name = "id_user", referencedColumnName = "id_user", nullable = false)
@@ -40,6 +45,15 @@ public class Ranking {
 
     public Ranking(Palestra palestra, User user) {
         this.palestra = palestra;
+        this.user = user;
+        setColocacao(0);
+        setConexoes(0);
+        setAcertos(0);
+        setPontuacaoTotal(0);
+    }
+
+    public Ranking(Evento evento, User user){
+        this.evento = evento;
         this.user = user;
         setColocacao(0);
         setConexoes(0);

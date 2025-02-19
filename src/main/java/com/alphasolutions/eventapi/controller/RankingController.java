@@ -24,9 +24,9 @@ public class RankingController {
         return rankingService.getAllUserInRanking();
     }
 
-    @GetMapping("/{idPalestra}")
-     public List<RankingView> getRankingByPalestra(@PathVariable Long idPalestra) {
-        return rankingService.getRankingByPalestra(idPalestra);
-    }
+    // @GetMapping("/{idPalestra}")
+    //  public List<RankingView> getRankingByPalestra(@PathVariable Long idPalestra) {
+    //     return rankingService.getRankingByPalestra(idPalestra);
+    // }
 
 }

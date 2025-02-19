@@ -1,5 +1,6 @@
 package com.alphasolutions.eventapi.service;
 
+import com.alphasolutions.eventapi.model.Evento;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.Ranking;
 import com.alphasolutions.eventapi.model.RankingView;
@@ -24,26 +25,35 @@ public class RankingService {
         return rankingViewRepository.findAllByEventoId(1L);
     }
 
-     public void inscreverUsuarioNoRanking(Palestra palestra, User user) {
-        if (!rankingRepository.existsByPalestraAndUser(palestra, user)) {
-            Ranking novoRanking = new Ranking(palestra, user);
-            rankingRepository.save(novoRanking);
-        }
-    }
+    //  public void inscreverUsuarioNoRanking(Palestra palestra, User user) {
+    //     if (!rankingRepository.existsByPalestraAndUser(palestra, user)) {
+    //         Ranking novoRanking = new Ranking(palestra, user);
+    //         rankingRepository.save(novoRanking);
+    //     }
+    // }
 
-    public List<RankingView> getRankingByPalestra(Long idPalestra) {
-        return rankingViewRepository.findAllByPalestraId(idPalestra);
-    }
+    // public void inscreverUsuarioNoRanking(Evento evento, User user) {
+    //     if (!rankingRepository.existsByUser(user)) {
+    //         Ranking novoRanking = new Ranking(evento, user);
+    //         rankingRepository.save(novoRanking);
+    //     }
+    // }
 
-    public void removerUsuarioDoRanking(Palestra palestra, User user) {
-        if (rankingRepository.existsByPalestraAndUser(palestra, user)) {
-            Ranking ranking = rankingRepository.findByPalestraAndUser(palestra, user);
-            rankingRepository.delete(ranking);
-        }
-    }
+
+
+    // public List<RankingView> getRankingByPalestra(Long idPalestra) {
+    //     return rankingViewRepository.findAllByPalestraId(idPalestra);
+    // }
+
+    // public void removerUsuarioDoRanking(Palestra palestra, User user) {
+    //     if (rankingRepository.existsByPalestraAndUser(palestra, user)) {
+    //         Ranking ranking = rankingRepository.findByPalestraAndUser(palestra, user);
+    //         rankingRepository.delete(ranking);
+    //     }
+    // }
     
-    public boolean isUsuarioInscritoNoRanking(Palestra palestra, User user) {
-        return rankingRepository.existsByPalestraAndUser(palestra, user);
-    }
+    // public boolean isUsuarioInscritoNoRanking(Palestra palestra, User user) {
+    //     return rankingRepository.existsByPalestraAndUser(palestra, user);
+    // }
   
 }

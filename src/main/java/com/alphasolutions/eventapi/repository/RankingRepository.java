@@ -27,6 +27,6 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     @Query("SELECT r.conexoes FROM Ranking r WHERE r.user.id = :userId")
     int findConexoesByUserId(String userId);
 
-    boolean existsByPalestraAndUser(Palestra palestra, User user);
+    boolean existsByUser(User user);
     Ranking findByPalestraAndUser(Palestra palestra, User user);
 }

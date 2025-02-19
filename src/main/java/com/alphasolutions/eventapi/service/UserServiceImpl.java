@@ -18,12 +18,15 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
     private final PasswordUtils passwordUtils;
     private final IdentifierGenerator identifierGenerator;
+    private final RankingService rankingService;
 
-    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, PasswordUtils passwordUtils, IdentifierGenerator identifierGenerator) {
+    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, RankingService rankingService,PasswordUtils passwordUtils, IdentifierGenerator identifierGenerator) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.passwordUtils = passwordUtils;
+        this.rankingService = rankingService;
         this.identifierGenerator = identifierGenerator;
+
     }
 
     @Override
@@ -51,6 +54,7 @@ public class UserServiceImpl implements UserService {
             Role role = new Role(2L,"Participante");
             User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
             userRepository.save(userWithPassword);
+            rankingService.inscreverUsuarioNoRanking(evento, userWithPassword);
         }
     }
 
