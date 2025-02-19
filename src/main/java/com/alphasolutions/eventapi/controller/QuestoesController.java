@@ -1,5 +1,6 @@
 package com.alphasolutions.eventapi.controller;
 
+import com.alphasolutions.eventapi.exception.InvalidRoleException;
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.model.Questoes;
 import com.alphasolutions.eventapi.model.QuestoesDTO;
@@ -66,26 +67,32 @@ public class QuestoesController {
 
     @GetMapping("/{idPalestra}")
     public ResponseEntity<List<Questoes>> getQuestoesByPalestra(@PathVariable Long idPalestra) {
-    List<Questoes> questoes = questoesService.findQuestoesByPalestra(idPalestra);
-    return ResponseEntity.ok(questoes);
+        List<Questoes> questoes = questoesService.findQuestoesByPalestra(idPalestra);
+        return ResponseEntity.ok(questoes);
     }
 
     @PostMapping("/createquestion")
-    public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes) {
-        return ResponseEntity.ok(questoesService.save(questoes));
+    public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes, @CookieValue(value = "eventToken") String eventToken) {
+        try {
+            authService.authenticateAdmin(eventToken);
+            return ResponseEntity.ok(questoesService.save(questoes));
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
     }
 
     @DeleteMapping("/delete/{idQuestao}")
     public ResponseEntity<String> deleteQuestao(@CookieValue(value = "eventToken") String token,@PathVariable Long idQuestao) {
         try{
-            authService.auhenticate(token);
+            authService.authenticateAdmin(token);
             questoesService.deleteById(idQuestao);
             return ResponseEntity.ok().build();
-        }catch (InvalidTokenException e) {
+        }catch (InvalidTokenException | InvalidRoleException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + e.getMessage());
         }catch (NoSuchObjectException noSuchObjectException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + noSuchObjectException.getMessage());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }

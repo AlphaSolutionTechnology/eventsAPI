@@ -1,5 +1,6 @@
 package com.alphasolutions.eventapi.controller;
 
+import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,41 +27,33 @@ import org.springframework.http.ResponseEntity;
 public class PalestraController {
 
     private final JwtUtil jwtUtil;
-    private PalestraRepository palestraRepository;
+    private final AuthService authService;
+    private final PalestraRepository palestraRepository;
     private final PalestraService palestraService;
     private final UserRepository userRepository;
     private final RankingService rankingService;
 
-public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil, PalestraService palestraService, UserRepository userRepository, RankingService rankingService){
+public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil, PalestraService palestraService, UserRepository userRepository, RankingService rankingService, AuthService authService){
     this.palestraRepository = palestraRepository;
     this.jwtUtil = jwtUtil;
     this.palestraService = palestraService;
     this.userRepository = userRepository;
     this.rankingService = rankingService;
+    this.authService = authService;
 }
 
 @GetMapping("/lista")
 public ResponseEntity<?> PalestraList(@CookieValue(value = "eventToken",required = true) String eventToken){
-    if(eventToken == null || eventToken.isEmpty()) {
-        ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token invalido");
-    }
-   
-        Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
-
-        if(tokenVerified.get("error") != null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
-        }
-
-        if(tokenVerified.get("role").equals("Participante")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: participantes não podem ver a lista de palestras.");
-        }
-    
+    try {
+        authService.authenticateAdmin(eventToken);
         List<Palestra> palestras =  palestraRepository.findAll();
-
-    return ResponseEntity.ok(palestras);
+        return ResponseEntity.ok(palestras);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
 }
 
-@GetMapping("/{uniqueCode}") //usuario se conecta a palestra
+@GetMapping("/{uniqueCode}") //u
 public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @CookieValue(value = "eventToken", required = true) String eventToken) {
 
 
@@ -74,23 +67,19 @@ public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @Cooki
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
     }
 
-    // Buscar usuário pelo token
     String userId = tokenVerified.get("id").toString();
     Optional<User> user = userRepository.findById(userId);
     if (user.isEmpty()) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
     }
 
-    // Buscar palestra pelo código
     Optional<Palestra> palestra = palestraRepository.findByUniqueCode(uniqueCode.trim());
     if (palestra.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
     }
 
-    // Inscrever usuário automaticamente no ranking da palestra
     rankingService.inscreverUsuarioNoRanking(palestra.get(), user.get());
 
-     // Retorna o ID da palestra para o frontend
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Palestra validada e usuário inscrito no ranking.");
     response.put("idPalestra", palestra.get().getId());  // Retorna o ID da palestra
@@ -101,7 +90,6 @@ public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @Cooki
 @GetMapping("/verificarInscricao/{idPalestra}")
 public ResponseEntity<?> verificarInscricao(@PathVariable Long idPalestra, @CookieValue(value = "eventToken", required = true) String eventToken) {
 
-    // Verificação se o token é válido
     if (eventToken == null || eventToken.isEmpty()) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token inválido.");
     }
@@ -118,13 +106,11 @@ public ResponseEntity<?> verificarInscricao(@PathVariable Long idPalestra, @Cook
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
     }
 
-    // Verificar se o usuário está inscrito na palestra
     Optional<Palestra> palestra = palestraRepository.findById(idPalestra);
     if (palestra.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
     }
 
-    // Verificar se o usuário está no ranking da palestra (presumindo que o ranking é a forma de inscrição)
     boolean isInscrito = rankingService.isUsuarioInscritoNoRanking(palestra.get(), user.get());
     
     if (isInscrito) {
@@ -133,9 +119,6 @@ public ResponseEntity<?> verificarInscricao(@PathVariable Long idPalestra, @Cook
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário não está inscrito nesta palestra.");
     }
 }
-
-
-
 
 @PostMapping("/criar")
 public ResponseEntity<?> createPalestra(@CookieValue(value = "eventToken",required = true) String eventToken ,@RequestBody Palestra palestra) {
