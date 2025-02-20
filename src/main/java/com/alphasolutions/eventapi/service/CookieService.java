@@ -15,7 +15,8 @@ public class CookieService {
                 .build();
     }
 
-    public ResponseCookie deleteTokenCookie(String eventToken) {
+    public ResponseCookie deleteTokenCookie() {
+
         return ResponseCookie
                 .from("eventToken", "")
                 .httpOnly(true)

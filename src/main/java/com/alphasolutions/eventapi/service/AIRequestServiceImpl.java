@@ -1,5 +1,6 @@
 package com.alphasolutions.eventapi.service;
 
+import com.alphasolutions.eventapi.exception.GeneratedQuestionLimitException;
 import com.alphasolutions.eventapi.exception.InvalidApiKeyException;
 import com.alphasolutions.eventapi.utils.Prompt;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.naming.LimitExceededException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +32,15 @@ public class AIRequestServiceImpl implements AIRequestService {
         }
         
         String userMessage = (String) request.get("text");
-        String questionCount = request.getOrDefault("questionCount", "2").toString();
+        int questionCount = Integer.parseInt(request.getOrDefault("questionCount", 2).toString());
+        if (questionCount > 20 ) {
+            throw new GeneratedQuestionLimitException("Limite de questões excedido: o limite é 20");
+        }
+        if(questionCount < 1){
+            questionCount = 1;
+        }
         String historyPrompt = extractHistoryQuestions((List<Map<String,Object>>) request.get("existingQuestion"));
-        String prompt = Prompt.GEMINIPROMPT.getFormattedPrompt(historyPrompt,userMessage,questionCount);
-
+        String prompt = Prompt.GEMINIPROMPT.getFormattedPrompt(historyPrompt,userMessage,String.valueOf(questionCount));
         Map<String, Object> payload = Map.of(
                 "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
         );

@@ -1,5 +1,6 @@
 package com.alphasolutions.eventapi.service;
 
+import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
 import com.alphasolutions.eventapi.model.Evento;
 import com.alphasolutions.eventapi.model.Role;
@@ -23,7 +24,12 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
 
     @Override
     public String createAccountWithGoogle(String token) {
-        Payload googlePayload = jwtUtil.verifyGoogleToken(token);
+        Payload googlePayload;
+        try{
+            googlePayload = jwtUtil.verifyGoogleToken(token);
+        } catch (Exception e) {
+            throw new InvalidTokenException(e.getMessage());
+        }
         User user = userRepository.findById(googlePayload.getSubject()).orElse(null);
         if (user != null) {
             return jwtUtil.generateToken(user);

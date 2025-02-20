@@ -23,9 +23,8 @@ public class Ranking {
     private Evento evento;
 
     @ManyToOne
-    @JoinColumn(name = "id_palestra", referencedColumnName = "id_palestra", nullable = false)
+    @JoinColumn(name = "id_palestra", referencedColumnName = "id_palestra", nullable = true)
     private Palestra palestra;
-
 
     @ManyToOne
     @JoinColumn(name = "id_user", referencedColumnName = "id_user", nullable = false)

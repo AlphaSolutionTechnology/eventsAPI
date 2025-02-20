@@ -32,12 +32,12 @@ public class RankingService {
     //     }
     // }
 
-    // public void inscreverUsuarioNoRanking(Evento evento, User user) {
-    //     if (!rankingRepository.existsByUser(user)) {
-    //         Ranking novoRanking = new Ranking(evento, user);
-    //         rankingRepository.save(novoRanking);
-    //     }
-    // }
+     public void inscreverUsuarioNoRanking(Evento evento, User user) {
+         if (!rankingRepository.existsByUser(user)) {
+             Ranking novoRanking = new Ranking(evento, user);
+             rankingRepository.save(novoRanking);
+         }
+     }
 
 
 
