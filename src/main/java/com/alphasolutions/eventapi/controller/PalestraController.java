@@ -1,230 +1,179 @@
 package com.alphasolutions.eventapi.controller;
 
-import com.alphasolutions.eventapi.service.AuthService;
-import com.alphasolutions.eventapi.utils.JwtUtil;
-import org.springframework.web.bind.annotation.*;
-
-
+import com.alphasolutions.eventapi.exception.*;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.PalestraIdsDTO;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
+import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.PalestraService;
 import com.alphasolutions.eventapi.service.RankingService;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.alphasolutions.eventapi.service.UserService;
+import com.alphasolutions.eventapi.utils.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/palestra")
 public class PalestraController {
 
-    private final JwtUtil jwtUtil;
     private final AuthService authService;
     private final PalestraRepository palestraRepository;
     private final PalestraService palestraService;
-    private final UserRepository userRepository;
-    private final RankingService rankingService;
+    private final UserService userService;
 
-public PalestraController(PalestraRepository palestraRepository, JwtUtil jwtUtil, PalestraService palestraService, UserRepository userRepository, RankingService rankingService, AuthService authService){
-    this.palestraRepository = palestraRepository;
-    this.jwtUtil = jwtUtil;
-    this.palestraService = palestraService;
-    this.userRepository = userRepository;
-    this.rankingService = rankingService;
-    this.authService = authService;
-}
-
-@GetMapping("/lista")
-public ResponseEntity<?> PalestraList(@CookieValue(value = "eventToken",required = true) String eventToken){
-    try {
-        authService.authenticateAdmin(eventToken);
-        List<Palestra> palestras =  palestraRepository.findAll();
-        return ResponseEntity.ok(palestras);
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-    }
-}
-
-@GetMapping("/{uniqueCode}") //u
-public ResponseEntity<?> validarPalestra(@PathVariable String uniqueCode, @CookieValue(value = "eventToken", required = true) String eventToken) {
-
-
-    if (eventToken == null || eventToken.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token inválido");
+    public PalestraController(
+            PalestraRepository palestraRepository,
+            JwtUtil jwtUtil,
+            PalestraService palestraService,
+            UserRepository userRepository,
+            AuthService authService, UserService userService) {
+        this.palestraRepository = palestraRepository;
+        this.palestraService = palestraService;
+        this.authService = authService;
+        this.userService = userService;
     }
 
-    Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
+    @GetMapping("/verificarPalestra/{uniqueCode}")
+    public ResponseEntity<?> verificarPalestra(
+            @PathVariable String uniqueCode,
+            @CookieValue(value = "eventToken") String eventToken) {
 
-    if (tokenVerified.get("error") != null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
-    }
+        try {
+            authService.authenticate(eventToken);
+            User user = userService.getUserByToken(eventToken);
+            Palestra palestra = palestraService.findPalestra(uniqueCode.trim());
 
-    // Buscar usuário pelo token
-    String userId = tokenVerified.get("id").toString();
-    Optional<User> user = userRepository.findById(userId);
-    if (user.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
-    }
+            boolean isInscrito = palestraService.isUsuarioInscritoNaPalestra(palestra, user);
 
-    // Buscar palestra pelo código
-    Optional<Palestra> palestra = palestraRepository.findByUniqueCode(uniqueCode.trim());
-    if (palestra.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
-    }
+            return ResponseEntity.ok(Map.of(
+                    "message", "Verificação concluída com sucesso.",
+                    "idPalestra", palestra.getId(),
+                    "inscrito", isInscrito
+            ));
 
-
-    //verifica se usuário está inscrito em alguma palestra
-    boolean isInscrito = palestraService.isUsuarioInscritoNaPalestra(palestra, user);
-
-    if(isInscrito){
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário já está inscrito em uma palestra.");
-    } else {
-        palestraService.inscreverUsuarioNaPalestra(palestra.get().getId(),user.get());
-    }
-
-
-    // Inscrever usuário automaticamente no ranking da palestra
-    // rankingService.inscreverUsuarioNoRanking(palestra.get(), user.get());
-
-     // Retorna o ID da palestra para o frontend
-    Map<String, Object> response = new HashMap<>();
-    response.put("message", "Palestra validada e usuário inscrito na palestra.");
-    response.put("idPalestra", palestra.get().getId());  // Retorna o ID da palestra
-
-    return ResponseEntity.ok(response);
-}
-
-@GetMapping("/verificarInscricao/{idPalestra}")
-public ResponseEntity<?> verificarInscricao(@PathVariable Long idPalestra, @CookieValue(value = "eventToken", required = true) String eventToken) {
-
-    // Verificação se o token é válido
-    if (eventToken == null || eventToken.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token inválido.");
-    }
-
-    Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
-    if (tokenVerified.get("error") != null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
-    }
-
-    // Buscar o usuário no banco de dados com base no ID do token
-    String userId = tokenVerified.get("id").toString();
-    Optional<User> user = userRepository.findById(userId);
-    if (user.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
-    }
-
-    // Verificar se o usuário está inscrito na palestra
-    Optional<Palestra> palestra = palestraRepository.findById(idPalestra);
-    if (palestra.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
-    }
-
-    boolean isInscrito = palestraService.isUsuarioInscritoNaPalestra(palestra, user);
-
-    // Verificar se o usuário está no ranking da palestra (presumindo que o ranking é a forma de inscrição)
-    // boolean isInscrito = rankingService.isUsuarioInscritoNoRanking(palestra.get(), user.get());
-    
-    if (isInscrito) {
-        return ResponseEntity.ok(Map.of("inscrito", isInscrito));
-    } else {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário não está inscrito nesta palestra.");
-    }
-}
-
-
-
-
-@PostMapping("/criar")
-public ResponseEntity<?> createPalestra(@CookieValue(value = "eventToken",required = true) String eventToken ,@RequestBody Palestra palestra) {
-    if(eventToken == null || eventToken.isEmpty()) {
-        ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token invalido");
-    }
-    if(eventToken != null && !eventToken.isEmpty()) {
-        Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
-        if(tokenVerified.get("error") != null){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(tokenVerified.get("error").toString());
-        }
-        if(tokenVerified.get("role").equals("Participante")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não é palestrante");
+        } catch (InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (PalestraNotFoundException | UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado...");
         }
     }
-    if (palestraRepository.existsByTema(palestra.getTema())) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body("Uma palestra com este tema já existe.");
+
+
+    @GetMapping("/lista")
+    public ResponseEntity<?> listarPalestras(@CookieValue(value = "eventToken") String eventToken) {
+        try {
+            authService.authenticateAdmin(eventToken);
+            List<Palestra> palestras = palestraRepository.findAll();
+            return ResponseEntity.ok(palestras);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");
+        }
     }
 
-    Palestra novaPalestra = palestraService.criarPalestra(palestra);
+    @PostMapping("/criar")
+    public ResponseEntity<?> criarPalestra(
+            @CookieValue(value = "eventToken") String eventToken,
+            @RequestBody Palestra palestra) {
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(novaPalestra);
+        try{
+            authService.authenticateAdmin(eventToken);
+            Palestra novaPalestra = palestraService.criarPalestra(palestra);
+            return ResponseEntity.status(HttpStatus.CREATED).body(novaPalestra);
+        } catch (InvalidRoleException | InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado..");
+        }
+
+    }
+
+    @DeleteMapping("/excluir")
+    public ResponseEntity<?> excluirPalestras(@CookieValue("eventToken") String eventToken,@RequestBody PalestraIdsDTO dto) {
+        Long id = dto.getId();
+        try {
+            authService.authenticateAdmin(eventToken);
+            palestraService.deletePalestra(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (PalestraNotFoundException palestraNotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(palestraNotFoundException.getMessage());
+        } catch (InvalidRoleException | InvalidTokenException invalidRoleException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso Negado.");
+        }
+    }
+
+
+    @GetMapping("/{uniqueCode}")
+    public ResponseEntity<?> validarPalestra(
+            @PathVariable String uniqueCode,
+            @CookieValue(value = "eventToken") String eventToken) {
+
+        try{
+            authService.authenticate(eventToken);
+            User user = userService.getUserByToken(eventToken);
+            Palestra palestra = palestraService.findPalestra(uniqueCode.trim());
+            boolean isUserSubscribed = palestraService.isUsuarioInscritoNaPalestra(palestra,user);
+            if (isUserSubscribed) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+            palestraService.inscreverUsuarioNaPalestra(palestra.getId(),user);
+            return ResponseEntity.ok(Map.of("message", "sucesso","idPalestra", palestra.getId()));
+        } catch (InvalidTokenException invalidTokenException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage());
+        } catch (PalestraNotFoundException|UserNotFoundException notFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundException.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado..");
+        }
+    }
+
+    @PostMapping("/inscrever/{uniqueCode}")
+    public ResponseEntity<?> inscreverUsuarioNaPalestra(
+            @PathVariable String uniqueCode,
+            @CookieValue(value = "eventToken") String eventToken) {
+
+        try {
+            authService.authenticate(eventToken);
+            User user = userService.getUserByToken(eventToken);
+            Palestra palestra = palestraService.findPalestra(uniqueCode.trim());
+            if(palestraService.isUsuarioInscritoNaPalestra(palestra, user)){
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+            palestraService.inscreverUsuarioNaPalestra(palestra.getId(), user);
+            return ResponseEntity.ok(Map.of("message", "Usuário inscrito com sucesso!", "idPalestra", palestra.getId()));
+        } catch (InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (PalestraNotFoundException | UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado...");
+        }
+    }
+
+    @DeleteMapping("/desinscrever/{idPalestra}")
+    public ResponseEntity<?> desinscreverUsuarioDaPalestra(
+            @PathVariable Long idPalestra,
+            @CookieValue(value = "eventToken") String eventToken) {
+
+        try {
+            authService.authenticate(eventToken);
+            User user = userService.getUserByToken(eventToken);
+            palestraService.desinscreverUsuarioDaPalestra(user);
+            return ResponseEntity.ok(Map.of("message", "Usuário desinscrito com sucesso!", "idPalestra", idPalestra));
+        } catch (InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (PalestraNotFoundException | UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado...");
+        }
+    }
+
+
 }
-
-
-@DeleteMapping("/excluir")
-public ResponseEntity<?> deletePalestras(@RequestBody PalestraIdsDTO dto) {
-    List<Long> ids = dto.getIds();
-
-    if (ids == null || ids.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Nenhuma palestra selecionada para exclusão.");
-    }
-
-    try {
-        palestraRepository.deleteAllById(ids);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Erro ao excluir palestras: " + e.getMessage());
-    }
-}
-
-@DeleteMapping("/desinscrever/{idPalestra}")
-public ResponseEntity<?> desinscreverUsuarioDaPalestra(@PathVariable Long idPalestra, @CookieValue(value = "eventToken", required = true) String eventToken) {
-
-    if (eventToken == null || eventToken.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token inválido");
-    }
-
-   
-    Map<String, Object> tokenVerified = jwtUtil.extractClaim(eventToken);
-    if (tokenVerified.get("error") != null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Erro ao validar token.");
-    }
-
-   
-    String userId = tokenVerified.get("id").toString();
-    Optional<User> user = userRepository.findById(userId);
-    if (user.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado.");
-    }
-
-    
-    Optional<Palestra> palestra = palestraRepository.findById(idPalestra);
-    if (palestra.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Palestra não encontrada.");
-    }
-
-    // // Remover usuário do ranking da palestra
-    // rankingService.removerUsuarioDoRanking(palestra.get(), user.get());
-
-    //desinscreve usuario da palestra
-    palestraService.desinscreverUsuarioDaPalestra(palestra.get(), user.get());
-
-
-    return ResponseEntity.ok("Usuário desinscrito da palestra e removido do ranking.");
-}
-
-
-
-
-}
-
-

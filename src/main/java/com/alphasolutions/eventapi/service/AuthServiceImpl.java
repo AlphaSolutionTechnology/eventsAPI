@@ -39,28 +39,20 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String auhenticate(String token) {
+    public void authenticate(String token) {
         Map<String,Object> claim =  jwtUtil.extractClaim(token);
         if(claim.get("error") == null){
-            return token;
+            return;
         }
         throw new InvalidTokenException("Token invalido");
     }
 
     @Override
-    public String authenticateAdmin(String token){
-        try {
-            boolean isUserAdmin = authorizationService.isRoleAdmin(token);
-            if(!isUserAdmin) {
-                throw new InvalidRoleException("Invalid role");
-            }
-            return token;
-        } catch (InvalidTokenException invalidTokenException) {
-            throw new InvalidTokenException(invalidTokenException.getMessage());
-        } catch (InvalidRoleException invalidRoleException){
-            throw new InvalidRoleException(invalidRoleException.getMessage());
+    public void authenticateAdmin(String token) {
+        boolean isUserAdmin = authorizationService.isRoleAdmin(token);
+        if (!isUserAdmin) {
+            throw new InvalidRoleException("Invalid role");
         }
     }
-
 
 }

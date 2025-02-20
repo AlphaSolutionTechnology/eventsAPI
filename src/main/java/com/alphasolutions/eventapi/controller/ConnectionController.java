@@ -32,7 +32,7 @@ public class ConnectionController {
     @GetMapping("/retrieveconnectionrequest")
     public ResponseEntity<?> retrieveConnectionRequest(@CookieValue(value = "eventToken") String token) {
         try {
-            authService.auhenticate(token);
+            authService.authenticate(token);
             List<Conexao> conexao = connectionService.getConexoes(token);
             List<ConexaoDTO> connectionDto = new ArrayList<>(conexao.size());
             for(Conexao con : conexao) {
@@ -50,7 +50,7 @@ public class ConnectionController {
     @PatchMapping(value = "/answerconnectionrequest")
     public ResponseEntity<?> answerConnectionRequest(@CookieValue(value = "eventToken") String token, @RequestBody AlphaConnectionRequest connectionRequest) {
         try {
-            authService.auhenticate(token);
+            authService.authenticate(token);
             connectionService.answerConnectionRequest(connectionRequest.getTo(),connectionRequest.getFrom(),connectionRequest.getStatus());
             return ResponseEntity.ok().build();
         }catch (InvalidTokenException invalidTokenException) {

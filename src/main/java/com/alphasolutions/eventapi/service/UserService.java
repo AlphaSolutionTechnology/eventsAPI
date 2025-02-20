@@ -9,5 +9,7 @@ public interface UserService {
 
     User getUserById(String googleId);
 
+    User getUserByToken(String token);
+
     User checkEmailAndPasswordValidityAndReturnUser(String email, String password);
 }

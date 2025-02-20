@@ -3,6 +3,7 @@ package com.alphasolutions.eventapi.service;
 
 import java.util.Optional;
 
+import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.User;
@@ -16,60 +17,69 @@ public class PalestraService {
 
     private final PalestraRepository palestraRepository;
     private final RankingService rankingService;
-    private final UserRepository userRepository; 
+    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public PalestraService(PalestraRepository palestraRepository, RankingService rankingService, UserRepository userRepository){
+    public PalestraService(PalestraRepository palestraRepository, RankingService rankingService, UserRepository userRepository, UserService userService){
         this.palestraRepository = palestraRepository;
         this.rankingService = rankingService;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
-    
-     // Método para gerar código único e salvar palestra
      public Palestra criarPalestra(Palestra palestra) {
-        
         String uniqueCode;
-
         do {
-            uniqueCode = IdentifierGenerator.generateIdentity(6);
-        } while (palestraRepository.existsByUniqueCode(uniqueCode)); // Verifica se o código já existe
+            uniqueCode = IdentifierGenerator.generateIdentity(5);
+        } while (palestraRepository.existsByUniqueCode(uniqueCode));
 
         palestra.setUniqueCode(uniqueCode);
 
         return palestraRepository.save(palestra);
     }
 
-    
-    public boolean verificarPalestra(String uniqueCode){
-        return palestraRepository.existsByUniqueCode(uniqueCode);
-    }
 
-    public User inscreverUsuarioNaPalestra(Long id, User user){
-        
+    public void inscreverUsuarioNaPalestra(Long id, User user){
         Optional<Palestra> palestra = palestraRepository.findById(id);
-
-            user.setPalestra(palestra.get());
-            
-            return userRepository.save(user);
+        user.setPalestra(palestra.get());
+        userRepository.save(user);
 
     }
 
-    public boolean isUsuarioInscritoNaPalestra(Optional<Palestra> palestra, Optional<User> user){
-
-        boolean isInscrito = userRepository.existsByPalestra(palestra);
-
-        return isInscrito;
+    public boolean isUsuarioInscritoNaPalestra(Palestra palestra, User user){
+        if(palestra.getId().equals(user.getPalestra().getId())){
+            return true;
+        }
+        return false;
     }
 
-    public User desinscreverUsuarioDaPalestra(Palestra palestra, User user) {       
-        // rankingService.removerUsuarioDoRanking(palestra, user);
-
+    public void desinscreverUsuarioDaPalestra(User user) {
         user.setPalestra(null);
-
-        return userRepository.save(user);
-
+        userRepository.save(user);
     }
 
-    
 
+    public void deletePalestra(Long id) {
+        if(palestraRepository.existsById(id)) {
+            palestraRepository.deletePalestraById(id);
+            return;
+        }
+        throw new PalestraNotFoundException("No such palestra");
+    }
+
+    public Palestra findPalestra(String uniqueCode) {
+        Palestra palestra = palestraRepository.findByUniqueCode(uniqueCode).orElse(null);
+        if(palestra == null) {
+            throw new PalestraNotFoundException("No such palestra");
+        }
+        return palestra;
+    }
+
+    public Palestra findPalestraById(Long id) {
+        Palestra palestra = palestraRepository.findById(id).orElse(null);
+        if(palestra == null) {
+            throw new PalestraNotFoundException("No such palestra");
+        }
+        return palestra;
+    }
 }

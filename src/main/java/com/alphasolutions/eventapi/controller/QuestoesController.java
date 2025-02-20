@@ -15,11 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.transform.Result;
 import java.rmi.NoSuchObjectException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -43,7 +41,7 @@ public class QuestoesController {
     @PostMapping("/registerresult")
     public ResponseEntity<?> registerResult(@CookieValue(value = "eventToken") String eventToken, @RequestBody ResultDTO result) {
         try {
-            authService.auhenticate(eventToken);
+            authService.authenticate(eventToken);
             resultService.saveResult(result,jwtUtil.extractClaim(eventToken).get("id").toString());
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (InvalidTokenException invalidTokenException) {
@@ -73,6 +71,7 @@ public class QuestoesController {
 
     @PostMapping("/createquestion")
     public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes, @CookieValue(value = "eventToken") String eventToken) {
+        System.out.println("yes he come");
         try {
             authService.authenticateAdmin(eventToken);
             return ResponseEntity.ok(questoesService.save(questoes));
@@ -99,7 +98,7 @@ public class QuestoesController {
     @PutMapping(value = "/updatequestion",consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> updateQuestao(@CookieValue("eventToken") String eventToken, @RequestBody QuestoesDTO questoes) {
         try{
-            authService.auhenticate(eventToken);
+            authService.authenticate(eventToken);
             questoesService.updateQuestoes(questoes);
             return ResponseEntity.ok().build();
         }catch (InvalidTokenException e) {

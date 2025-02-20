@@ -11,6 +11,8 @@ import com.google.api.client.json.webtoken.JsonWebToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -63,6 +65,15 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(googleId).orElse(null);
     }
 
+    @Override
+    public User getUserByToken(String eventToken) {
+        Map<String, Object> tokenData = jwtUtil.extractClaim(eventToken);
+        User user = userRepository.findById(tokenData.get("id").toString()).orElse(null);
+        if(user != null) {
+            return user;
+        }
+        throw new UserNotFoundException("NO SUCH USER");
+    }
     public boolean isEmailAlreadyExists(String email) {
         return userRepository.existsByEmail(email);
     }

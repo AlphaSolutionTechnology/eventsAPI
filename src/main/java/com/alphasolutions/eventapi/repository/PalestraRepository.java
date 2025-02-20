@@ -13,7 +13,8 @@ public interface PalestraRepository extends JpaRepository<Palestra, Long> {
     boolean existsByUser(User user);
     boolean existsByTema(String tema);
     boolean existsByUniqueCode(String uniqueCode);
-    
     Optional<Palestra> findByUser(User user);
     Optional<Palestra> findByUniqueCode(String uniqueCode);
+
+    void deletePalestraById(Long id);
 }

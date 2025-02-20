@@ -63,7 +63,7 @@ public class AuthController {
     public ResponseEntity<?> authenticateWithGoogle(@RequestBody Map<String,String> body, HttpServletResponse response, @CookieValue(value = "eventToken", required = false) String existingToken) {
         try{
             if(existingToken != null && !existingToken.isEmpty()) {
-                authService.auhenticate(existingToken);
+                authService.authenticate(existingToken);
             }
             String eventToken = googleAuthService.createAccountWithGoogle(body.get("token"));
             response.addHeader("Set-Cookie", cookieService.createCookie(eventToken).toString());
@@ -79,7 +79,7 @@ public class AuthController {
     @PostMapping("/validate")
     public ResponseEntity<?> validate(@CookieValue(value = "eventToken", required = false) String existingToken) {
         try{
-            authService.auhenticate(existingToken);
+            authService.authenticate(existingToken);
             return ResponseEntity.ok().body(jwtUtil.extractClaim(existingToken));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
@@ -89,7 +89,7 @@ public class AuthController {
     @DeleteMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(@CookieValue(value = "eventToken", required = true) String existingToken, HttpServletResponse response) {
         try {
-            authService.auhenticate(existingToken);
+            authService.authenticate(existingToken);
             ResponseCookie eventToken = cookieService.deleteTokenCookie();
             response.setHeader("Set-Cookie", eventToken.toString());
             return ResponseEntity.ok(Map.of("message", "Logout realizado com sucesso"));
