@@ -1,7 +1,6 @@
 package com.alphasolutions.eventapi.service;
 
 import com.alphasolutions.eventapi.model.Evento;
-import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.Ranking;
 import com.alphasolutions.eventapi.model.RankingView;
 import com.alphasolutions.eventapi.repository.RankingRepository;
@@ -38,7 +37,6 @@ public class RankingService {
              rankingRepository.save(novoRanking);
          }
      }
-
 
 
     // public List<RankingView> getRankingByPalestra(Long idPalestra) {
