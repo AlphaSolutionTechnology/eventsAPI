@@ -96,7 +96,9 @@ public class PalestraController {
 
     @DeleteMapping("/excluir")
     public ResponseEntity<?> excluirPalestras(@CookieValue("eventToken") String eventToken,@RequestBody PalestraIdsDTO dto) {
-        Long id = dto.getId();
+        System.out.println(dto.getId());
+        Long id = Long.parseLong(dto.getId());
+        System.out.println(id);
         try {
             authService.authenticateAdmin(eventToken);
             palestraService.deletePalestra(id);

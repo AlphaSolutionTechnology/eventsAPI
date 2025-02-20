@@ -71,7 +71,6 @@ public class QuestoesController {
 
     @PostMapping("/createquestion")
     public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes, @CookieValue(value = "eventToken") String eventToken) {
-        System.out.println("yes he come");
         try {
             authService.authenticateAdmin(eventToken);
             return ResponseEntity.ok(questoesService.save(questoes));

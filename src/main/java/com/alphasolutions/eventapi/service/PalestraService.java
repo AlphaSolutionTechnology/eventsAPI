@@ -4,6 +4,7 @@ package com.alphasolutions.eventapi.service;
 import java.util.Optional;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.User;
@@ -58,10 +59,10 @@ public class PalestraService {
         userRepository.save(user);
     }
 
-
+    @Transactional
     public void deletePalestra(Long id) {
         if(palestraRepository.existsById(id)) {
-            palestraRepository.deletePalestraById(id);
+            palestraRepository.removePalestraById(id);
             return;
         }
         throw new PalestraNotFoundException("No such palestra");
