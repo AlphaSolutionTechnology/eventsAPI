@@ -1,7 +1,6 @@
 package com.alphasolutions.eventapi.service;
 
 import com.alphasolutions.eventapi.model.Evento;
-import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.Ranking;
 import com.alphasolutions.eventapi.model.RankingView;
 import com.alphasolutions.eventapi.repository.RankingRepository;
@@ -32,12 +31,12 @@ public class RankingService {
     //     }
     // }
 
-    // public void inscreverUsuarioNoRanking(Evento evento, User user) {
-    //     if (!rankingRepository.existsByUser(user)) {
-    //         Ranking novoRanking = new Ranking(evento, user);
-    //         rankingRepository.save(novoRanking);
-    //     }
-    // }
+    public void inscreverUsuarioNoRanking(Evento evento, User user) {
+        if (!rankingRepository.existsByUser(user)) {
+            Ranking novoRanking = new Ranking(evento, user);
+            rankingRepository.save(novoRanking);
+        }
+    }
 
 
 
