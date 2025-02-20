@@ -31,11 +31,6 @@ public class connectionRequestWebSocketController {
 
     @MessageMapping("/sendrequest")
     public void notification(@Payload NotificationMessage message, Principal principal, @CookieValue(value = "eventToken") String eventToken) {
-        try{
-            authService.auhenticate(eventToken);
-        }catch (Exception e){
-            return;
-        }
         NotificationResponseMessage response = notificationService.askForConnection(principal.getName(),message.getTo());
         String[] senderName = {""};
         if(!response.getMessage().contains("encontrado")){
