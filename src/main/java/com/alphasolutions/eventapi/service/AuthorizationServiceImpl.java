@@ -25,7 +25,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         Map<String,Object> verifiedToken = jwtUtil.extractClaim(token);
         if(verifiedToken.get("error") == null) {
             Role role = roleRepository.findById(1L).orElse(null);
-            System.out.println(verifiedToken);
             if (role == null) {
                 throw new InvalidRoleException("NO such role");
             }

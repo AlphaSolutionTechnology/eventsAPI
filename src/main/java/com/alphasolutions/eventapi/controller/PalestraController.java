@@ -40,14 +40,13 @@ public class PalestraController {
 
     @GetMapping("/verificarPalestra/{uniqueCode}")
     public ResponseEntity<?> verificarPalestra(
-            @PathVariable String uniqueCode,
+            @PathVariable Long uniqueCode,
             @CookieValue(value = "eventToken") String eventToken) {
 
         try {
             authService.authenticate(eventToken);
             User user = userService.getUserByToken(eventToken);
-            Palestra palestra = palestraService.findPalestra(uniqueCode.trim());
-
+            Palestra palestra = palestraService.findPalestraById(uniqueCode);
             boolean isInscrito = palestraService.isUsuarioInscritoNaPalestra(palestra, user);
 
             return ResponseEntity.ok(Map.of(
@@ -84,7 +83,7 @@ public class PalestraController {
 
         try{
             authService.authenticateAdmin(eventToken);
-            Palestra novaPalestra = palestraService.criarPalestra(palestra);
+            Palestra novaPalestra = palestraService.criarPalestra(palestra, eventToken);
             return ResponseEntity.status(HttpStatus.CREATED).body(novaPalestra);
         } catch (InvalidRoleException | InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");
@@ -96,10 +95,9 @@ public class PalestraController {
 
     @DeleteMapping("/excluir")
     public ResponseEntity<?> excluirPalestras(@CookieValue("eventToken") String eventToken,@RequestBody PalestraIdsDTO dto) {
-        System.out.println(dto.getId());
-        Long id = Long.parseLong(dto.getId());
-        System.out.println(id);
+
         try {
+            Long id = Long.parseLong(dto.getId());
             authService.authenticateAdmin(eventToken);
             palestraService.deletePalestra(id);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -107,6 +105,8 @@ public class PalestraController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(palestraNotFoundException.getMessage());
         } catch (InvalidRoleException | InvalidTokenException invalidRoleException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso Negado.");
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("NUmero inválido");
         }
     }
 
@@ -124,7 +124,7 @@ public class PalestraController {
             if (isUserSubscribed) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
-            palestraService.inscreverUsuarioNaPalestra(palestra.getId(),user);
+            palestraService.inscreverUsuarioNaPalestra(palestra,user);
             return ResponseEntity.ok(Map.of("message", "sucesso","idPalestra", palestra.getId()));
         } catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage());
@@ -135,25 +135,25 @@ public class PalestraController {
         }
     }
 
-    @PostMapping("/inscrever/{uniqueCode}")
+    @PatchMapping("/inscrever/{uniqueCode}")
     public ResponseEntity<?> inscreverUsuarioNaPalestra(
             @PathVariable String uniqueCode,
             @CookieValue(value = "eventToken") String eventToken) {
-
         try {
             authService.authenticate(eventToken);
             User user = userService.getUserByToken(eventToken);
             Palestra palestra = palestraService.findPalestra(uniqueCode.trim());
             if(palestraService.isUsuarioInscritoNaPalestra(palestra, user)){
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                return ResponseEntity.ok(Map.of("message", "Usuário já inscrito", "idPalestra", palestra.getId()));
             }
-            palestraService.inscreverUsuarioNaPalestra(palestra.getId(), user);
+            palestraService.inscreverUsuarioNaPalestra(palestra, user);
             return ResponseEntity.ok(Map.of("message", "Usuário inscrito com sucesso!", "idPalestra", palestra.getId()));
         } catch (InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (PalestraNotFoundException | UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado...");
         }
     }

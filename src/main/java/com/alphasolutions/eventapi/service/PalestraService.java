@@ -4,6 +4,7 @@ package com.alphasolutions.eventapi.service;
 import java.util.Optional;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
+import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
@@ -28,30 +29,33 @@ public class PalestraService {
         this.userService = userService;
     }
 
-     public Palestra criarPalestra(Palestra palestra) {
+     public Palestra criarPalestra(Palestra palestra, String eventToken) {
         String uniqueCode;
+        User user = userService.getUserByToken(eventToken);
         do {
             uniqueCode = IdentifierGenerator.generateIdentity(5);
         } while (palestraRepository.existsByUniqueCode(uniqueCode));
-
+        palestra.setUser(user);
         palestra.setUniqueCode(uniqueCode);
-
         return palestraRepository.save(palestra);
     }
 
 
-    public void inscreverUsuarioNaPalestra(Long id, User user){
-        Optional<Palestra> palestra = palestraRepository.findById(id);
-        user.setPalestra(palestra.get());
+    public void inscreverUsuarioNaPalestra(Palestra palestra, User user){
+        user.setPalestra(palestra);
         userRepository.save(user);
 
     }
 
     public boolean isUsuarioInscritoNaPalestra(Palestra palestra, User user){
-        if(palestra.getId().equals(user.getPalestra().getId())){
-            return true;
+        Palestra palestraInUserTable = user.getPalestra();
+        if(palestraInUserTable == null){
+            return false;
         }
-        return false;
+        if(palestra == null){
+            throw new PalestraNotFoundException("Palestra nao encontrada");
+        }
+        return palestra.getId().equals(palestraInUserTable.getId());
     }
 
     public void desinscreverUsuarioDaPalestra(User user) {
@@ -73,6 +77,7 @@ public class PalestraService {
         if(palestra == null) {
             throw new PalestraNotFoundException("No such palestra");
         }
+
         return palestra;
     }
 

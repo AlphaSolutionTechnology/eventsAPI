@@ -72,6 +72,9 @@ public class QuestoesController {
     @PostMapping("/createquestion")
     public ResponseEntity<Questoes> createQuestao(@RequestBody Questoes questoes, @CookieValue(value = "eventToken") String eventToken) {
         try {
+            if(questoes.getEnunciado() == null || questoes.getChoices() == null || questoes.getCorrectAnswer() == null || questoes.getEnunciado().isEmpty() || questoes.getChoices().isEmpty() || questoes.getCorrectAnswer().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(questoes);
+            }
             authService.authenticateAdmin(eventToken);
             return ResponseEntity.ok(questoesService.save(questoes));
         }catch (Exception e) {
