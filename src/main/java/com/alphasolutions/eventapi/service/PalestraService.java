@@ -1,10 +1,9 @@
 package com.alphasolutions.eventapi.service;
 
 
-import java.util.Optional;
+import java.util.List;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
-import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
@@ -87,5 +86,16 @@ public class PalestraService {
             throw new PalestraNotFoundException("No such palestra");
         }
         return palestra;
+    }
+
+    public List<Palestra> findAllUserPalestra(User user) {
+        return palestraRepository.findAllByUser(user);
+    }
+
+    @Transactional
+    public void unsubscribeAllUsersFromPalestra(Long id) {
+        if (palestraRepository.existsById(id)) {
+            userRepository.unsubscribeUsersFromPalestra(id);
+        }
     }
 }

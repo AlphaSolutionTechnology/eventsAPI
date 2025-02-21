@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface RankingViewRepository extends JpaRepository<RankingView, Long> {
     List<RankingView> findAllByEventoId(Long idEvento);
-    List<RankingView> findAllByPalestraId(Long idPalestra);
 }

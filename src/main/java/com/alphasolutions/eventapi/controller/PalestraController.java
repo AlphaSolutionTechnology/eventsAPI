@@ -69,7 +69,7 @@ public class PalestraController {
     public ResponseEntity<?> listarPalestras(@CookieValue(value = "eventToken") String eventToken) {
         try {
             authService.authenticateAdmin(eventToken);
-            List<Palestra> palestras = palestraRepository.findAll();
+            List<Palestra> palestras = palestraService.findAllUserPalestra(userService.getUserByToken(eventToken));
             return ResponseEntity.ok(palestras);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");
@@ -99,6 +99,7 @@ public class PalestraController {
         try {
             Long id = Long.parseLong(dto.getId());
             authService.authenticateAdmin(eventToken);
+            palestraService.unsubscribeAllUsersFromPalestra(id);
             palestraService.deletePalestra(id);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (PalestraNotFoundException palestraNotFoundException) {

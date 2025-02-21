@@ -81,8 +81,10 @@ public class AuthController {
         try{
             authService.authenticate(existingToken);
             return ResponseEntity.ok().body(jwtUtil.extractClaim(existingToken));
-        }catch (Exception e){
+        } catch (InvalidTokenException e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
         }
     }
 
