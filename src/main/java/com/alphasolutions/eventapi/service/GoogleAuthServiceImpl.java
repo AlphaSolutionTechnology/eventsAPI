@@ -5,6 +5,7 @@ import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
 import com.alphasolutions.eventapi.model.Evento;
 import com.alphasolutions.eventapi.model.Role;
 import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.IdentifierGenerator;
 import com.alphasolutions.eventapi.utils.JwtUtil;
@@ -16,10 +17,14 @@ import org.springframework.web.client.HttpClientErrorException;
 public class GoogleAuthServiceImpl implements GoogleAuthService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final RankingRepository rankingRepository;
+    private final RankingService rankingService;
 
-    public GoogleAuthServiceImpl(JwtUtil jwtUtil, UserRepository userRepository) {
+    public GoogleAuthServiceImpl(JwtUtil jwtUtil, UserRepository userRepository, RankingRepository rankingRepository, RankingService rankingService) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.rankingRepository = rankingRepository;
+        this.rankingService = rankingService;
     }
 
     @Override
@@ -40,6 +45,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         }while(userRepository.existsById(uniqueCode));
 
         user = userRepository.save(new User(googlePayload.getSubject(),(String) googlePayload.get("name"),new Role(2L,"Participante"),new Evento(1L,"Primeiro Evento"),(String) googlePayload.get("email"),null,uniqueCode));
+        rankingService.inscreverUsuarioNoRanking(new Evento(1L,"Primeiro Evento"),user);
         return jwtUtil.generateToken(user);
     }
 
