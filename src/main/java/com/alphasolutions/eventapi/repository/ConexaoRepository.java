@@ -3,6 +3,8 @@ package com.alphasolutions.eventapi.repository;
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,4 +18,11 @@ public interface ConexaoRepository extends JpaRepository<Conexao, Integer> {
 
     List<Conexao> findAllBySolicitadoAndStatus(User solicitado, String status);
 
+    @Query(value = "SELECT CASE " +
+            "WHEN id_solicitante = :userId THEN id_solicitado " +
+            "ELSE id_solicitante END " +
+            "FROM conexao " +
+            "WHERE id_solicitante = :userId OR id_solicitado = :userId",
+            nativeQuery = true)
+    List<String> findIdsUsuariosConectados(@Param("userId") String userId);
 }

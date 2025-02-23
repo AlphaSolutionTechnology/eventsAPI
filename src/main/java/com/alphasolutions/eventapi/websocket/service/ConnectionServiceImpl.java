@@ -2,6 +2,7 @@ package com.alphasolutions.eventapi.websocket.service;
 
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.UserConnetionDTO;
 import com.alphasolutions.eventapi.repository.ConexaoRepository;
 import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.RankingViewRepository;
@@ -12,6 +13,7 @@ import com.alphasolutions.eventapi.websocket.notification.Status;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -85,8 +87,24 @@ public class ConnectionServiceImpl implements ConnectionService {
         }
 
     }
+
     @Override
-    public List<Conexao> getConexoes(String token) {
+    public List<UserConnetionDTO> getAcceotedConnections(String token) {
+        Map<String,Object> verifiedToken =  jwtUtil.extractClaim(token);
+        String id = verifiedToken.get("id").toString();
+        List<String> userIdList = conexaoRepository.findIdsUsuariosConectados(id);
+        List<UserConnetionDTO> userConnetionDTOS = new ArrayList<>(userIdList.size());
+        User user;
+        for(String u : userIdList) {
+            user = userRepository.findById(u).orElse(null);
+
+            assert user != null;
+            userConnetionDTOS.add(new UserConnetionDTO(user.getNome(), user.getUniqueCode()));
+        }
+        return userConnetionDTOS;
+    }
+
+    public List<Conexao> getPendingConnections(String token) {
         try{
             Map<String,Object> claim = jwtUtil.extractClaim(token);
             String userId = (String)claim.get("id");

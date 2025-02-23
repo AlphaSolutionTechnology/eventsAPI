@@ -154,7 +154,6 @@ public class PalestraController {
         } catch (PalestraNotFoundException | UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado...");
         }
     }
