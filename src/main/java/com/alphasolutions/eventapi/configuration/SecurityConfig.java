@@ -12,24 +12,26 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    CustomUserDetailsService userDetailsService;
-    CorsConfig corsConfig;
+    private final CustomUserDetailsService userDetailsService;
+    private final CorsConfig corsConfig;
+
     public SecurityConfig(CorsConfig corsConfig, CustomUserDetailsService userDetailsService) {
         this.corsConfig = corsConfig;
         this.userDetailsService = userDetailsService;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                .csrf((csrf) -> csrf.disable())
-                .cors((Customizer.withDefaults()))
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers("/api/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/websocket/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(new WebSocketFilter(userDetailsService), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(formLogin -> formLogin.disable())

@@ -9,8 +9,9 @@ public class CookieService {
         return ResponseCookie
                 .from("eventToken", eventToken)
                 .httpOnly(true)
+                .secure(true)
                 .path("/")
-                .sameSite("Lax")
+                .sameSite("None")
                 .maxAge(7 * 24 * 60 * 60)
                 .build();
     }
@@ -20,8 +21,9 @@ public class CookieService {
         return ResponseCookie
                 .from("eventToken", "")
                 .httpOnly(true)
+                .secure(true)
                 .path("/")
-                .sameSite("Lax")
+                .sameSite("None")
                 .maxAge(0)
                 .build();
     }

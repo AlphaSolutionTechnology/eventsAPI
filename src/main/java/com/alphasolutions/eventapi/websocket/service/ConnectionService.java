@@ -2,6 +2,7 @@ package com.alphasolutions.eventapi.websocket.service;
 
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.UserConnetionDTO;
 import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
 import com.alphasolutions.eventapi.websocket.notification.Status;
 
@@ -13,8 +14,9 @@ public interface ConnectionService {
 
     NotificationResponseMessage connect(String idSolicitante, String idSolicitado, Status status);
 
-    List<Conexao> getConexoes(String token);
+    List<Conexao> getPendingConnections(String token);
 
     void answerConnectionRequest(String to, String from, String status);
 
-    }
+    List<UserConnetionDTO> getAcceotedConnections(String token);
+}

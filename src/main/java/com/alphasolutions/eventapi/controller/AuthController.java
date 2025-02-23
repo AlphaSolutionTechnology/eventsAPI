@@ -39,7 +39,8 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpServletResponse response) {
         try {
             String eventToken = authService.authenticate(userDTO.getEmail(), userDTO.getPassword());
-            response.addHeader("Set-Cookie",cookieService.createCookie(eventToken).toString());
+            ResponseCookie cookie = cookieService.createCookie(eventToken);
+            response.setHeader("Set-Cookie", cookie.toString());
             return ResponseEntity.ok().body(Map.of("data",jwtUtil.extractClaim(eventToken)));
         }catch (UserNotFoundException userNotFoundException) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", userNotFoundException.getMessage()));
@@ -64,12 +65,13 @@ public class AuthController {
         try{
             if(existingToken != null && !existingToken.isEmpty()) {
                 authService.authenticate(existingToken);
+                return ResponseEntity.ok().body(Map.of("data",jwtUtil.extractClaim(existingToken)));
             }
             String eventToken = googleAuthService.createAccountWithGoogle(body.get("token"));
-            response.addHeader("Set-Cookie", cookieService.createCookie(eventToken).toString());
+            response.setHeader("Set-Cookie", cookieService.createCookie(eventToken).toString());
             return ResponseEntity.ok().body(jwtUtil.extractClaim(eventToken));
         } catch (InvalidTokenException invalidTokenException) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage() + "invalid token");
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }

@@ -30,5 +30,7 @@ build/
 !**/src/test/**/build/
 src/main/resources/application.properties
 ### VS Code ###
+*.properties
 .vscode/
 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
+/home/avorio/programming/eventAPI/src/main/resources/example.properties
