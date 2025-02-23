@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Results{
 
     @Id
@@ -31,12 +32,17 @@ public class Results{
     @JoinColumn(name = "id_user", referencedColumnName = "id_user", nullable = false)
     private User user;
 
-    public Results(Integer correctAnswers, Integer score, Integer wrongAnswers,Double totalTime,User user) {
+   @ManyToOne
+   @JoinColumn(name="id_palestra", referencedColumnName="id_palestra", nullable = false)
+   private Palestra palestra; 
+
+    public Results(Integer correctAnswers, Integer score, Integer wrongAnswers,Double totalTime,User user, Palestra palestra) {
         this.correctAnswers = correctAnswers;
         this.score = score;
         this.wrongAnswers = wrongAnswers;
         this.totalTime = totalTime;
         this.user = user;
+        this.palestra = palestra;
     }
     public Results(Long idResult, Integer correctAnswers, Integer score, Integer wrongAnswers,Double totalTime,User user) {
         this.idResult = idResult;

@@ -2,13 +2,18 @@ package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.exception.InvalidRoleException;
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
+import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.Questoes;
 import com.alphasolutions.eventapi.model.QuestoesDTO;
 import com.alphasolutions.eventapi.model.ResultDTO;
+import com.alphasolutions.eventapi.model.Results;
+import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.service.AuthService;
+import com.alphasolutions.eventapi.service.PalestraService;
 import com.alphasolutions.eventapi.service.QuestoesService;
 
 import com.alphasolutions.eventapi.service.ResultService;
+import com.alphasolutions.eventapi.service.UserService;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,7 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import java.rmi.NoSuchObjectException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 
 
@@ -30,19 +37,23 @@ public class QuestoesController {
     private final JwtUtil jwtUtil;
     private final ResultService resultService;
     private final AuthService authService;
+    private final UserService userService;
+    private final PalestraService palestraService;
 
-    public QuestoesController(QuestoesService questoesService, JwtUtil jwtUtil, ResultService resultService, AuthService authService) {
+    public QuestoesController(QuestoesService questoesService, JwtUtil jwtUtil, ResultService resultService, AuthService authService, UserService userService, PalestraService palestraService) {
         this.questoesService = questoesService;
         this.jwtUtil = jwtUtil;
         this.resultService = resultService;
         this.authService = authService;
+        this.userService = userService;
+        this.palestraService = palestraService;
     }
 
-    @PostMapping("/registerresult")
-    public ResponseEntity<?> registerResult(@CookieValue(value = "eventToken") String eventToken, @RequestBody ResultDTO result) {
+    @PostMapping("/registerresult/{idPalestra}")
+    public ResponseEntity<?> registerResult(@CookieValue(value = "eventToken") String eventToken, @RequestBody ResultDTO result, @PathVariable Long idPalestra) {
         try {
             authService.authenticate(eventToken);
-            resultService.saveResult(result,jwtUtil.extractClaim(eventToken).get("id").toString());
+            resultService.saveResult(result,jwtUtil.extractClaim(eventToken).get("id").toString(), idPalestra);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + invalidTokenException.getMessage());
@@ -112,5 +123,25 @@ public class QuestoesController {
         }
 
     }
+
+@GetMapping("/verificarStatus/{idPalestra}")
+public ResponseEntity<?> verificarStatusQuizz(@CookieValue("eventToken") String eventToken, @PathVariable Long idPalestra ) {
+try{
+    authService.authenticate(eventToken);
+    User user = userService.getUserByToken(eventToken);
+    Palestra palestra = palestraService.findPalestraById(idPalestra);
+    Optional<Results> result = resultService.findResultByUserAndPalestra(user, palestra);
+    boolean notDone = result.isEmpty();
+
+    return ResponseEntity.ok(Map.of("quizzStatus", notDone ? "Pendente" : "Concluído"));
+
+} catch (InvalidTokenException e){
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: " + e.getMessage());
+
+} catch (Exception e){
+    return ResponseEntity.badRequest().body(e.getMessage());
+}
+}
+    
 
 }
