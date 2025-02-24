@@ -29,18 +29,18 @@ public class connectionRequestWebSocketController {
         this.authService = authService;
     }
 
-    @MessageMapping("/sendrequest")
-    public void notification(@Payload NotificationMessage message, Principal principal) {
-
-        NotificationResponseMessage response = notificationService.askForConnection(principal.getName(),message.getTo());
-        String[] senderName = {""};
-        if(!response.getMessage().contains("encontrado")){
-            senderName = userRepository.findByUniqueCode(principal.getName()).getNome().split(" ");
-        }
-        response.setTo(principal.getName());
-        messagingTemplate.convertAndSendToUser(principal.getName(),"/queue/notification" ,response);
-        if(response.getMessage().equals("Sucesso!")){
-            messagingTemplate.convertAndSendToUser(message.getTo(),"/queue/notification" , Map.of("to",message.getTo(), "from", principal.getName(),"message","quer se conectar a você","name",(senderName[0] + " "+ (senderName.length >= 2 ? senderName[1]:""))));
-        }
-    }
+//    @MessageMapping("/sendrequest")
+//    public void notification(@Payload NotificationMessage message, Principal principal) {
+//
+//        NotificationResponseMessage response = notificationService.askForConnection(principal.getName(),message.getTo());
+//        String[] senderName = {""};
+//        if(!response.getMessage().contains("encontrado")){
+//            senderName = userRepository.findByUniqueCode(principal.getName()).getNome().split(" ");
+//        }
+//        response.setTo(principal.getName());
+//        messagingTemplate.convertAndSendToUser(principal.getName(),"/queue/notification" ,response);
+//        if(response.getMessage().equals("Sucesso!")){
+//            messagingTemplate.convertAndSendToUser(message.getTo(),"/queue/notification" , Map.of("to",message.getTo(), "from", principal.getName(),"message","quer se conectar a você","name",(senderName[0] + " "+ (senderName.length >= 2 ? senderName[1]:""))));
+//        }
+//    }
 }

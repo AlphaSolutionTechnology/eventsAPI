@@ -1,12 +1,17 @@
 package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
-import com.alphasolutions.eventapi.model.AlphaConnectionRequest;
-import com.alphasolutions.eventapi.model.Conexao;
-import com.alphasolutions.eventapi.model.ConexaoDTO;
+import com.alphasolutions.eventapi.exception.UserNotMatchWithRequestException;
+import com.alphasolutions.eventapi.model.*;
 import com.alphasolutions.eventapi.service.AuthService;
+import com.alphasolutions.eventapi.service.AuthorizationService;
+import com.alphasolutions.eventapi.service.UserService;
+import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
+import com.alphasolutions.eventapi.websocket.notification.Status;
 import com.alphasolutions.eventapi.websocket.service.ConnectionService;
+import org.apache.http.conn.ConnectionRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +26,15 @@ public class ConnectionController {
 
     private final ConnectionService connectionService;
     private final AuthService authService;
+    private final AuthorizationService authorizationService;
+    private final UserService userService;
     SimpMessagingTemplate messagingTemplate;
-    public ConnectionController(ConnectionService connectionService, SimpMessagingTemplate messagingTemplate, AuthService authService) {
+    public ConnectionController(ConnectionService connectionService, SimpMessagingTemplate messagingTemplate, AuthService authService, AuthorizationService authorizationService, UserService userService) {
         this.connectionService = connectionService;
         this.messagingTemplate = messagingTemplate;
         this.authService = authService;
+        this.authorizationService = authorizationService;
+        this.userService = userService;
     }
 
     @GetMapping("/retrieveconnectionrequest")
@@ -44,6 +53,25 @@ public class ConnectionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PostMapping(value = "/sendconnectionrequest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> sendConnectionRequest(@CookieValue(value = "eventToken") String token, @RequestBody ConnectionRequestData requestData ){
+        try {
+            System.out.println(requestData.getFrom() + " " + requestData.getTo());
+            authService.authenticate(token);
+            authorizationService.isUserSolicitant(token,requestData.getFrom());
+            connectionService.connect(requestData.getFrom(), requestData.getTo(), Status.WAITING);
+            User user = userService.getUserByToken(token);
+            String[] senderName = user.getNome().split(" ");
+            messagingTemplate.convertAndSendToUser(requestData.getTo(),"/queue/notification",Map.of("to", requestData.getTo(), "from", requestData.getFrom() ,"name",senderName[0] + (senderName.length >= 2 ? senderName[1]:""),"message",senderName[0] + (senderName.length >= 2 ? senderName[1]:"") + " quer se conectar com você!"));
+            return ResponseEntity.ok().body(Map.of("server","Enviada com Sucesso!"));
+        } catch (UserNotMatchWithRequestException | InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("server",e.getMessage()));
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("server","Erro ao enviar os dados!"));
+        }
+    }
+
 
     @GetMapping("/getacceptedconnections")
     public ResponseEntity<?> getAcceptedConnections(@CookieValue(value = "eventToken") String token) {

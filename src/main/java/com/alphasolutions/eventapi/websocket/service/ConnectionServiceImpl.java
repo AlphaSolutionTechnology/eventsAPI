@@ -1,5 +1,7 @@
 package com.alphasolutions.eventapi.websocket.service;
 
+import com.alphasolutions.eventapi.exception.SelfConnectionException;
+import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.model.UserConnetionDTO;
@@ -8,11 +10,11 @@ import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.RankingViewRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.JwtUtil;
-import com.alphasolutions.eventapi.websocket.notification.NotificationResponseMessage;
 import com.alphasolutions.eventapi.websocket.notification.Status;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.nio.channels.AlreadyConnectedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,29 +45,36 @@ public class ConnectionServiceImpl implements ConnectionService {
 
     }
     @Override
-    public NotificationResponseMessage connect (String idSolicitante, String idSolicitado, Status status) {
-        if(idSolicitante.equals(idSolicitado)) {
-            return new NotificationResponseMessage("Você não pode enviar solicitação para sí!");
-        }
-        User solicitante = userRepository.findByUniqueCode(idSolicitante);
-        User solicitado = userRepository.findByUniqueCode(idSolicitado);
-        if(solicitante == null || solicitado == null) {
-            return new NotificationResponseMessage("Não foi encontrado nenhum usuário com esse código: " + (solicitado == null ? idSolicitado:idSolicitante));
+    public void connect(String idSolicitante, String idSolicitado, Status status) {
+
+        if (idSolicitante.equals(idSolicitado)) {
+            throw new SelfConnectionException("Você não pode se conectar com sí mesmo!");
         }
 
-        if(isConnected(solicitante, solicitado)) {
-            Conexao solicitantSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitante,solicitado);
-            Conexao solicitatedSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitado,solicitante);
-            String currentStatus = solicitantSideStatus == null? solicitatedSideStatus.getStatus():solicitantSideStatus.getStatus();
-            if(currentStatus.equals(Status.ACCEPTED.getStatus())) {
-                return new NotificationResponseMessage("Usuarios já estão conectados");
-            }if(currentStatus.equals(Status.WAITING.getStatus())) {
-                return new NotificationResponseMessage("Aguardando resposta do outro usuário");
+        User solicitante = userRepository.findByUniqueCode(idSolicitante);
+        User solicitado = userRepository.findByUniqueCode(idSolicitado);
+
+        if (solicitante == null || solicitado == null) {
+            throw new UserNotFoundException(solicitante == null ? idSolicitante : idSolicitado);
+        }
+
+        if (isConnected(solicitante, solicitado)) {
+            Conexao solicitantSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitante, solicitado);
+            Conexao solicitatedSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitado, solicitante);
+
+            String currentStatus = solicitantSideStatus == null ? solicitatedSideStatus.getStatus() : solicitantSideStatus.getStatus();
+
+            if (currentStatus.equals(Status.ACCEPTED.getStatus())) {
+                throw new AlreadyConnectedException();
+            }
+            if (currentStatus.equals(Status.WAITING.getStatus())) {
+                throw new AlreadyConnectedException();
             }
         }
-        conexaoRepository.save(new Conexao(solicitante, solicitado,status.getStatus()));
-        return new NotificationResponseMessage("Sucesso!");
+
+        conexaoRepository.save(new Conexao(solicitante, solicitado, status.getStatus()));
     }
+
 
     @Override
     public void answerConnectionRequest(String to, String from, String status) {

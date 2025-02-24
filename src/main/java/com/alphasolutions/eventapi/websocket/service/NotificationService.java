@@ -13,8 +13,8 @@ public class NotificationService {
         this.connectionServiceImpl = connectionServiceImpl;
     }
 
-    public NotificationResponseMessage askForConnection(String currentUserUniqueCode, String toUserUniqueCode) {
-        return connectionServiceImpl.connect(currentUserUniqueCode, toUserUniqueCode, Status.WAITING);
+    public void askForConnection(String currentUserUniqueCode, String toUserUniqueCode) {
+        connectionServiceImpl.connect(currentUserUniqueCode, toUserUniqueCode, Status.WAITING);
     }
 
     public NotificationResponseMessage acceptConnection(String currentUserUniqueCode) {
