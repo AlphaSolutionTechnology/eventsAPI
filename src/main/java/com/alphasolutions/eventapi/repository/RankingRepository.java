@@ -21,7 +21,7 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Ranking r SET r.acertos = :acertos WHERE r.user.id = :userId")
+    @Query("UPDATE Ranking r SET r.acertos = :acertos + r.acertos WHERE r.user.id = :userId")
     void incrementAcertos(@Param("userId") String userId, @Param("acertos") Integer acertos);
 
     @Query("SELECT r.conexoes FROM Ranking r WHERE r.user.id = :userId")
@@ -29,4 +29,6 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
 
     boolean existsByUser(User user);
     Ranking findByPalestraAndUser(Palestra palestra, User user);
+
+    Ranking findRankingByUser(User user);
 }

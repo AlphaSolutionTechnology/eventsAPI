@@ -1,9 +1,7 @@
 package com.alphasolutions.eventapi.service;
 
-import com.alphasolutions.eventapi.model.Palestra;
-import com.alphasolutions.eventapi.model.ResultDTO;
-import com.alphasolutions.eventapi.model.Results;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
+import com.alphasolutions.eventapi.model.*;
 import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.ResultsRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
@@ -28,23 +26,32 @@ public class ResultService {
         this.palestraService = palestraService;
     }
 
-    public boolean saveResult(ResultDTO result, String userId, Long idPalestra) {
+    public void saveResult(ResultDTO result, String userId, Long idPalestra) {
         User user = userRepository.findById(userId).orElse(null);
         Palestra palestra = palestraService.findPalestraById(idPalestra);
         if(user == null) {
-            return  false;
+            throw new UserAlreadyExistsException("User " + userId + " already exists");
         }
         try {
-            Results results = resultsRepository.findByUserAndPalestra(user,palestra).orElse(null);
+            Results results = resultsRepository.findResultsByUser(user);
+            Ranking actualRanking = rankingRepository.findRankingByUser(user);
+
             if(results != null) {
-                resultsRepository.save(new Results(results.getIdResult(),result.getCorrectAnswerCount(),result.getScore(),result.getWrongAnswerCount(),result.getTotalTime(),user, palestra));
-                return true;
+                Results userResultInPalestra = resultsRepository.findByUserAndPalestra(user, palestra).orElse(null);
+
+                results.setCorrectAnswers(result.getCorrectAnswerCount() + results.getCorrectAnswers()); results.setWrongAnswers(result.getWrongAnswerCount() + results.getWrongAnswers()); results.setTotalTime((result.getTotalTime() + results.getTotalTime())/2);
+                resultsRepository.save(results);
+                if(userResultInPalestra == null) {
+                    actualRanking.setAcertos(actualRanking.getAcertos() + result.getCorrectAnswerCount());
+                    rankingRepository.save(actualRanking);
+                }
+                return;
             }
             resultsRepository.save(new Results(result.getCorrectAnswerCount(),result.getScore(),result.getWrongAnswerCount(),result.getTotalTime(),user, palestra));
-            rankingRepository.incrementAcertos(user.getId(), result.getCorrectAnswerCount());
-            return true;
+            actualRanking.setAcertos(actualRanking.getAcertos() + result.getCorrectAnswerCount());
+            rankingRepository.save(actualRanking);
         } catch (Exception e) {
-            return false;
+            throw new RuntimeException(e);
         }
 
     }
