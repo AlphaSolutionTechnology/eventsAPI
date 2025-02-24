@@ -76,6 +76,7 @@ public class QuestoesController {
 
     @GetMapping("/{idPalestra}")
     public ResponseEntity<List<Questoes>> getQuestoesByPalestra(@PathVariable Long idPalestra) {
+        System.out.println("here " + idPalestra);
         List<Questoes> questoes = questoesService.findQuestoesByPalestra(idPalestra);
         return ResponseEntity.ok(questoes);
     }
@@ -142,6 +143,5 @@ try{
     return ResponseEntity.badRequest().body(e.getMessage());
 }
 }
-    
 
 }

@@ -35,25 +35,23 @@ public class ResultService {
             return  false;
         }
         try {
-            Results results = resultsRepository.findFirstByUser(user).orElse(null);;
+            Results results = resultsRepository.findByUserAndPalestra(user,palestra).orElse(null);
             if(results != null) {
                 resultsRepository.save(new Results(results.getIdResult(),result.getCorrectAnswerCount(),result.getScore(),result.getWrongAnswerCount(),result.getTotalTime(),user, palestra));
                 return true;
             }
             resultsRepository.save(new Results(result.getCorrectAnswerCount(),result.getScore(),result.getWrongAnswerCount(),result.getTotalTime(),user, palestra));
             rankingRepository.incrementAcertos(user.getId(), result.getCorrectAnswerCount());
-
+            return true;
         } catch (Exception e) {
             return false;
         }
-        return true;
+
     }
 
 
     public Optional<Results> findResultByUserAndPalestra(User user, Palestra palestra){
-
         return resultsRepository.findByUserAndPalestra(user, palestra);
-
     }
 
 

@@ -2,6 +2,7 @@ package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.exception.*;
 import com.alphasolutions.eventapi.model.Palestra;
+import com.alphasolutions.eventapi.model.PalestraDTO;
 import com.alphasolutions.eventapi.model.PalestraIdsDTO;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
@@ -69,7 +70,7 @@ public class PalestraController {
     public ResponseEntity<?> listarPalestras(@CookieValue(value = "eventToken") String eventToken) {
         try {
             authService.authenticateAdmin(eventToken);
-            List<Palestra> palestras = palestraService.findAllUserPalestra(userService.getUserByToken(eventToken));
+            List<PalestraDTO> palestras = palestraService.findAllUserPalestra(userService.getUserByToken(eventToken));
             return ResponseEntity.ok(palestras);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");

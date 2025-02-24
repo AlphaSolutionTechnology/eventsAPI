@@ -1,9 +1,11 @@
 package com.alphasolutions.eventapi.service;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
+import com.alphasolutions.eventapi.model.PalestraDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
@@ -88,8 +90,13 @@ public class PalestraService {
         return palestra;
     }
 
-    public List<Palestra> findAllUserPalestra(User user) {
-        return palestraRepository.findAllByUser(user);
+    public List<PalestraDTO> findAllUserPalestra(User user) {
+        List<Palestra> palestras =  palestraRepository.findAllByUser(user);
+        List<PalestraDTO> palestrasDTO = new ArrayList<>(palestras.size());
+        for (Palestra palestra : palestras) {
+            palestrasDTO.add(new PalestraDTO(palestra.getId(), palestra.getTema(), palestra.getEvento(), palestra.getUniqueCode()));
+        }
+        return palestrasDTO;
     }
 
     @Transactional
