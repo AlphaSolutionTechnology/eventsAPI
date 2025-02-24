@@ -34,4 +34,4 @@ src/main/resources/application.properties
 .vscode/
 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
 /home/avorio/programming/eventAPI/src/main/resources/example.properties
-target/.env
+.env
