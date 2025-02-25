@@ -15,8 +15,6 @@ import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.websocket.notification.Status;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
-import java.nio.channels.AlreadyConnectedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +25,6 @@ public class ConnectionServiceImpl implements ConnectionService {
 
     private final RankingRepository rankingRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final RankingViewRepository rankingViewRepository;
     private final JwtUtil jwtUtil;
     public ConexaoRepository conexaoRepository;
     public UserRepository userRepository;
@@ -37,7 +34,7 @@ public class ConnectionServiceImpl implements ConnectionService {
         this.userRepository = userRepository;
         this.rankingRepository = rankingRepository;
         this.messagingTemplate = messagingTemplate;
-        this.rankingViewRepository = rankingViewRepository;
+
         this.jwtUtil = jwtUtil;
     }
     @Override
@@ -64,13 +61,13 @@ public class ConnectionServiceImpl implements ConnectionService {
             Conexao solicitantSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitante, solicitado);
             Conexao solicitatedSideStatus = conexaoRepository.findBySolicitanteAndSolicitado(solicitado, solicitante);
 
-            String currentStatus = solicitantSideStatus == null ? solicitatedSideStatus.getStatus() : solicitantSideStatus.getStatus();
+            Conexao currentStatus = solicitantSideStatus == null ? solicitatedSideStatus : solicitantSideStatus;
 
-            if (currentStatus.equals(Status.ACCEPTED.getStatus())) {
+            if (currentStatus.getStatus().equals(Status.ACCEPTED.getStatus())) {
                 throw new AlreadyConnectedUsersException("Usuários já estão conectados!");
             }
-            if (currentStatus.equals(Status.WAITING.getStatus())) {
-                String message = idSolicitante.equals(solicitatedSideStatus.getSolicitado().getUniqueCode()) ? "Este usuário enviou a você um pedido de conexão, aceite se quiser se conectar com ele!":"Esperando pela resposta do outro usuário";
+            if (currentStatus.getStatus().equals(Status.WAITING.getStatus())) {
+                String message = idSolicitante.equals(currentStatus.getSolicitado().getUniqueCode()) ? "Este usuário enviou a você um pedido de conexão, aceite se quiser se conectar com ele!":"Esperando pela resposta do outro usuário";
                 System.out.println(idSolicitante+ " " + solicitado.getUniqueCode());
                 throw new WaitingForResponseException(message);
             }
