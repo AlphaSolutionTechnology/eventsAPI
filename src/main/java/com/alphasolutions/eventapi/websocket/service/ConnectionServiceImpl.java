@@ -1,7 +1,9 @@
 package com.alphasolutions.eventapi.websocket.service;
 
+import com.alphasolutions.eventapi.exception.AlreadyConnectedUsersException;
 import com.alphasolutions.eventapi.exception.SelfConnectionException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
+import com.alphasolutions.eventapi.exception.WaitingForResponseException;
 import com.alphasolutions.eventapi.model.Conexao;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.model.UserConnetionDTO;
@@ -55,7 +57,7 @@ public class ConnectionServiceImpl implements ConnectionService {
         User solicitado = userRepository.findByUniqueCode(idSolicitado);
 
         if (solicitante == null || solicitado == null) {
-            throw new UserNotFoundException(solicitante == null ? idSolicitante : idSolicitado);
+            throw new UserNotFoundException("Não foi encontrado nenhum usuário com este id" + (solicitante == null ? idSolicitante : idSolicitado));
         }
 
         if (isConnected(solicitante, solicitado)) {
@@ -65,10 +67,12 @@ public class ConnectionServiceImpl implements ConnectionService {
             String currentStatus = solicitantSideStatus == null ? solicitatedSideStatus.getStatus() : solicitantSideStatus.getStatus();
 
             if (currentStatus.equals(Status.ACCEPTED.getStatus())) {
-                throw new AlreadyConnectedException();
+                throw new AlreadyConnectedUsersException("Usuários já estão conectados!");
             }
             if (currentStatus.equals(Status.WAITING.getStatus())) {
-                throw new AlreadyConnectedException();
+                String message = idSolicitante.equals(solicitatedSideStatus.getSolicitado().getUniqueCode()) ? "Este usuário enviou a você um pedido de conexão, aceite se quiser se conectar com ele!":"Esperando pela resposta do outro usuário";
+                System.out.println(idSolicitante+ " " + solicitado.getUniqueCode());
+                throw new WaitingForResponseException(message);
             }
         }
 

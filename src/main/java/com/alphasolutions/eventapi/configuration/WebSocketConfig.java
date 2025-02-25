@@ -24,7 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/websocket")
-                .setAllowedOriginPatterns("https://projeto-evento-amber.vercel.app", "http://localhost:5173")
+                .setAllowedOriginPatterns("https://app.gamifyeve.icu", "http://localhost:5173")
                 .withSockJS();
     }
 

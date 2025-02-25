@@ -1,7 +1,6 @@
 package com.alphasolutions.eventapi.controller;
 
-import com.alphasolutions.eventapi.exception.InvalidTokenException;
-import com.alphasolutions.eventapi.exception.UserNotMatchWithRequestException;
+import com.alphasolutions.eventapi.exception.*;
 import com.alphasolutions.eventapi.model.*;
 import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.AuthorizationService;
@@ -57,18 +56,25 @@ public class ConnectionController {
     @PostMapping(value = "/sendconnectionrequest", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> sendConnectionRequest(@CookieValue(value = "eventToken") String token, @RequestBody ConnectionRequestData requestData ){
         try {
-            System.out.println(requestData.getFrom() + " " + requestData.getTo());
             authService.authenticate(token);
             authorizationService.isUserSolicitant(token,requestData.getFrom());
             connectionService.connect(requestData.getFrom(), requestData.getTo(), Status.WAITING);
             User user = userService.getUserByToken(token);
             String[] senderName = user.getNome().split(" ");
-            messagingTemplate.convertAndSendToUser(requestData.getTo(),"/queue/notification",Map.of("to", requestData.getTo(), "from", requestData.getFrom() ,"name",senderName[0] + (senderName.length >= 2 ? senderName[1]:""),"message",senderName[0] + (senderName.length >= 2 ? senderName[1]:"") + " quer se conectar com você!"));
+            messagingTemplate.convertAndSendToUser(requestData.getTo(),"/queue/notification",Map.of("to", requestData.getTo(), "from", requestData.getFrom() ,"name",senderName[0] + (senderName.length >= 2 ? senderName[1]:""),"message",senderName[0]+ " "+ (senderName.length >= 2 ? senderName[1]:"") + " quer se conectar com você!"));
             return ResponseEntity.ok().body(Map.of("server","Enviada com Sucesso!"));
-        } catch (UserNotMatchWithRequestException | InvalidTokenException e) {
+        } catch (AlreadyConnectedUsersException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("server", exception.getMessage()));
+        } catch (WaitingForResponseException waitingForResponseException) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(Map.of("server",waitingForResponseException.getMessage()));
+        }catch (UserNotMatchWithRequestException userNotMatchWithRequestException){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("server",userNotMatchWithRequestException.getMessage()));
+        }  catch (UserNotFoundException userNotFoundException){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("server",userNotFoundException.getMessage()));
+        } catch (InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("server",e.getMessage()));
-        } catch (Exception exception) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("server","Erro ao enviar os dados!"));
+        }catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("server",exception.getMessage()));
         }
     }
 

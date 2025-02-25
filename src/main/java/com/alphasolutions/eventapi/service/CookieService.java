@@ -11,7 +11,7 @@ public class CookieService {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .sameSite("None")
+                .sameSite("Lax")
                 .maxAge(7 * 24 * 60 * 60)
                 .build();
     }
@@ -23,7 +23,7 @@ public class CookieService {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .sameSite("None")
+                .sameSite("Lax")
                 .maxAge(0)
                 .build();
     }
