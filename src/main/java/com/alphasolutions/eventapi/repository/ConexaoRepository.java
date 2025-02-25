@@ -22,7 +22,8 @@ public interface ConexaoRepository extends JpaRepository<Conexao, Integer> {
             "WHEN id_solicitante = :userId THEN id_solicitado " +
             "ELSE id_solicitante END " +
             "FROM conexao " +
-            "WHERE id_solicitante = :userId OR id_solicitado = :userId",
+            "WHERE (id_solicitante = :userId OR id_solicitado = :userId) " +
+            "AND status='ACCEPTED'",
             nativeQuery = true)
     List<String> findIdsUsuariosConectados(@Param("userId") String userId);
 }
