@@ -1,3 +1,4 @@
+
 package com.alphasolutions.eventapi.model;
 
 import jakarta.persistence.*;
@@ -31,5 +32,5 @@ public class Questoes {
     private String correctAnswer;
 
     @Column(name = "id_palestra", nullable = false)
-    private Long idPalestra; // Adicionado o campo id_palestra
+    private Long idPalestra;
 }
