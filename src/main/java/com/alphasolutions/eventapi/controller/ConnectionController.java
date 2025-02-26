@@ -61,7 +61,7 @@ public class ConnectionController {
             connectionService.connect(requestData.getFrom(), requestData.getTo(), Status.WAITING);
             User user = userService.getUserByToken(token);
             String[] senderName = user.getNome().split(" ");
-            messagingTemplate.convertAndSendToUser(requestData.getTo(),"/queue/notification",Map.of("to", requestData.getTo(), "from", requestData.getFrom() ,"name",senderName[0] + (senderName.length >= 2 ? senderName[1]:""),"message",senderName[0]+ " "+ (senderName.length >= 2 ? senderName[1]:"") + " quer se conectar com você!"));
+            messagingTemplate.convertAndSendToUser(requestData.getTo(),"/queue/notification",Map.of("to", requestData.getTo(), "from", requestData.getFrom() ,"name",senderName[0] + " "+ (senderName.length >= 2 ? senderName[1]:""),"message",senderName[0]+ " "+ (senderName.length >= 2 ? senderName[1]:"") + " quer se conectar com você!"));
             return ResponseEntity.ok().body(Map.of("server","Enviada com Sucesso!"));
         } catch (AlreadyConnectedUsersException exception) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("server", exception.getMessage()));
