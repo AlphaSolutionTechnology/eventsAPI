@@ -1,3 +1,4 @@
+// File: QuestoesDTO.java
 package com.alphasolutions.eventapi.model;
 
 import lombok.AllArgsConstructor;
@@ -12,10 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuestoesDTO {
-    Long idQuestao;
-    String idUser;
-    String enunciado;
-    List<String> choices;
-    Long idPalestra;
-    String correctAnswer;
+    private Long idQuestao;
+    private String idUser;
+    private String enunciado;
+    private List<String> choices;
+    private Long idPalestra;
+    private String correctAnswer;
 }
