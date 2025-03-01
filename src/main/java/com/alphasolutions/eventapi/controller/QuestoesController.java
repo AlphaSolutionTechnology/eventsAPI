@@ -43,27 +43,6 @@ public class QuestoesController {
         this.palestraService = palestraService;
     }
 
-    @PostMapping("/registerresult/{idPalestra}")
-    public ResponseEntity<?> registerResult(
-            @CookieValue(value = "eventToken") String eventToken,
-            @RequestBody ResultDTO result,
-            @PathVariable Long idPalestra
-    ) {
-        try {
-            authService.authenticate(eventToken);
-            String userId = jwtUtil.extractClaim(eventToken).get("id").toString();
-            resultService.saveResult(result, userId, idPalestra);
-
-            return ResponseEntity.status(HttpStatus.OK).body(result);
-        } catch (InvalidTokenException invalidTokenException) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Error: " + invalidTokenException.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
-    }
-
     @PostMapping("/validateAndRecord")
     public ResponseEntity<?> validateAndRecord(
             @CookieValue("eventToken") String eventToken,
@@ -197,24 +176,19 @@ public class QuestoesController {
         }
     }
 
-    // Endpoint para validação simples da resposta (separado do validateAndRecord)
-    @PostMapping("/validate")
-    public ResponseEntity<?> validateAnswer(@RequestBody Map<String, Object> payload) {
+    @GetMapping("/duration")
+    public ResponseEntity<Map<String, Object>> getQuizDuration(
+            @CookieValue("eventToken") String eventToken) {
         try {
-            Long questionId = Long.valueOf(payload.get("questionId").toString());
-            String selectedAnswer = payload.get("selectedAnswer").toString();
-
-            Questoes questao = questoesService.findById(questionId);
-            if (questao == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Questão não encontrada");
-            }
-
-            boolean isCorrect = questao.getCorrectAnswer().equals(selectedAnswer);
-            return ResponseEntity.ok(Map.of("isCorrect", isCorrect));
+            // Autentica o usuário (se necessário)
+            authService.authenticate(eventToken);
+            // Define uma duração fixa, por exemplo, 3 minutos (180 segundos)
+            int durationInSeconds = 180;
+            return ResponseEntity.ok(Map.of("duration", durationInSeconds));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao validar resposta: " + e.getMessage());
+                    .body(Map.of("error", e.getMessage()));
         }
     }
+
 }
