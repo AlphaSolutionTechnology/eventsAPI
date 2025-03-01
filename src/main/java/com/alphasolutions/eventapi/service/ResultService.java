@@ -33,13 +33,9 @@ public class ResultService {
         this.palestraService = palestraService;
     }
 
-    /**
-     * Método antigo, usado no fluxo em que o front-end envia o resultado apenas ao final.
-     */
     public void saveResult(ResultDTO result, String userId, Long idPalestra) {
         User user = userRepository.findById(userId).orElse(null);
         Palestra palestra = palestraService.findPalestraById(idPalestra);
-
         if (user == null) {
             throw new UserAlreadyExistsException("User " + userId + " already exists");
         }
@@ -48,15 +44,15 @@ public class ResultService {
             Ranking actualRanking = rankingRepository.findRankingByUser(user);
 
             if (results != null) {
-                Results userResultInPalestra = resultsRepository.findByUserAndPalestra(user, palestra).orElse(null);
+                Results userResultInPalestra = resultsRepository
+                        .findByUserAndPalestra(user, palestra)
+                        .orElse(null);
 
-                // Atualiza os campos do objeto existente
                 results.setCorrectAnswers(result.getCorrectAnswerCount() + results.getCorrectAnswers());
                 results.setWrongAnswers(result.getWrongAnswerCount() + results.getWrongAnswers());
                 results.setTotalTime((result.getTotalTime() + results.getTotalTime()) / 2);
                 resultsRepository.save(results);
 
-                // Atualiza ranking se for a primeira vez que esse usuário responde a esta palestra
                 if (userResultInPalestra == null && actualRanking != null) {
                     actualRanking.setAcertos(actualRanking.getAcertos() + result.getCorrectAnswerCount());
                     rankingRepository.save(actualRanking);
@@ -64,7 +60,6 @@ public class ResultService {
                 return;
             }
 
-            // Cria um novo registro de resultados se não existir
             Results newResult = new Results(
                     result.getCorrectAnswerCount(),
                     result.getScore(),
@@ -84,12 +79,7 @@ public class ResultService {
         }
     }
 
-    /**
-     * Novo método para atualizar ou criar o registro de resultado a cada questão respondida.
-     * Chamado pelo endpoint /validateAndRecord no controller.
-     */
     public void updateResult(String userId, Long idPalestra, boolean isCorrect, double timeSpent) {
-        // 1. Busca usuário e palestra
         User user = userRepository.findById(userId).orElse(null);
         Palestra palestra = palestraService.findPalestraById(idPalestra);
 
@@ -101,55 +91,43 @@ public class ResultService {
         }
 
         try {
-            // 2. Verifica se já existe um registro de resultado específico para (user, palestra)
             Results userResultInPalestra = resultsRepository.findByUserAndPalestra(user, palestra).orElse(null);
-
-            // Também podemos atualizar o ranking
             Ranking actualRanking = rankingRepository.findRankingByUser(user);
 
             if (userResultInPalestra == null) {
-                // 3a. Se não existir, cria um novo
                 userResultInPalestra = new Results();
                 userResultInPalestra.setUser(user);
                 userResultInPalestra.setPalestra(palestra);
 
-                // Se acertou
                 if (isCorrect) {
                     userResultInPalestra.setCorrectAnswers(1);
                     userResultInPalestra.setWrongAnswers(0);
-                    userResultInPalestra.setScore(5); // Exemplo de pontuação ao acertar
+                    userResultInPalestra.setScore(5);
                 } else {
                     userResultInPalestra.setCorrectAnswers(0);
                     userResultInPalestra.setWrongAnswers(1);
                     userResultInPalestra.setScore(0);
                 }
                 userResultInPalestra.setTotalTime(timeSpent);
-
                 resultsRepository.save(userResultInPalestra);
 
-                // Atualiza ranking
                 if (actualRanking != null && isCorrect) {
                     actualRanking.setAcertos(actualRanking.getAcertos() + 1);
                     rankingRepository.save(actualRanking);
                 }
             } else {
-                // 3b. Se existir, atualiza o registro
                 if (isCorrect) {
                     userResultInPalestra.setCorrectAnswers(userResultInPalestra.getCorrectAnswers() + 1);
-                    userResultInPalestra.setScore(userResultInPalestra.getScore() + 5); // Exemplo
+                    userResultInPalestra.setScore(userResultInPalestra.getScore() + 5);
                     if (actualRanking != null) {
                         actualRanking.setAcertos(actualRanking.getAcertos() + 1);
                     }
                 } else {
                     userResultInPalestra.setWrongAnswers(userResultInPalestra.getWrongAnswers() + 1);
                 }
-
-                // Soma o tempo gasto nesta questão
                 userResultInPalestra.setTotalTime(userResultInPalestra.getTotalTime() + timeSpent);
-
                 resultsRepository.save(userResultInPalestra);
 
-                // Salva ranking se foi atualizado
                 if (actualRanking != null) {
                     rankingRepository.save(actualRanking);
                 }
@@ -159,9 +137,29 @@ public class ResultService {
         }
     }
 
-    /**
-     * Retorna o registro de resultado para um determinado usuário e palestra, se existir.
-     */
+    public void setFinalTotalTime(String userId, Long idPalestra, Double totalTime) {
+        User user = userRepository.findById(userId).orElse(null);
+        Palestra palestra = palestraService.findPalestraById(idPalestra);
+        if (user == null) {
+            throw new UserAlreadyExistsException("Usuário não encontrado: " + userId);
+        }
+        if (palestra == null) {
+            throw new RuntimeException("Palestra não encontrada: " + idPalestra);
+        }
+        try {
+            Optional<Results> opt = resultsRepository.findByUserAndPalestra(user, palestra);
+            if (opt.isPresent()) {
+                Results results = opt.get();
+                results.setTotalTime(totalTime);
+                resultsRepository.save(results);
+            } else {
+                throw new RuntimeException("Resultado não encontrado para atualizar tempo final");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Optional<Results> findResultByUserAndPalestra(User user, Palestra palestra) {
         return resultsRepository.findByUserAndPalestra(user, palestra);
     }
