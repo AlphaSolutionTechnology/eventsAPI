@@ -77,6 +77,17 @@ public class PalestraController {
         }
     }
 
+    @GetMapping("/lecturelist")
+    public ResponseEntity<?> listarLectures(@CookieValue(value = "eventToken") String eventToken) {
+        try {
+            authService.authenticate(eventToken);
+            List<Palestra> palestras = palestraService.findAllPalestras();
+            return ResponseEntity.ok(palestras);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");
+        }
+    }
+
     @PostMapping("/criar")
     public ResponseEntity<?> criarPalestra(
             @CookieValue(value = "eventToken") String eventToken,

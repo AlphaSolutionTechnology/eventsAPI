@@ -90,6 +90,10 @@ public class PalestraService {
         return palestra;
     }
 
+    public List<Palestra> findAllPalestras() {
+        return palestraRepository.findAll();
+    }
+
     public List<PalestraDTO> findAllUserPalestra(User user) {
         List<Palestra> palestras =  palestraRepository.findAllByUser(user);
         List<PalestraDTO> palestrasDTO = new ArrayList<>(palestras.size());

@@ -1,7 +1,12 @@
 package com.alphasolutions.eventapi.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "results")
@@ -9,7 +14,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Results{
+public class Results {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,31 +30,39 @@ public class Results{
     @Column(name = "wrong_answers", nullable = false)
     private Integer wrongAnswers;
 
-    @Column(name = "total_time", nullable = false)
+    @Column(name = "total_time")
     private Double totalTime;
 
     @ManyToOne
     @JoinColumn(name = "id_user", referencedColumnName = "id_user", nullable = false)
     private User user;
 
-   @ManyToOne
-   @JoinColumn(name="id_palestra", referencedColumnName="id_palestra", nullable = false)
-   private Palestra palestra; 
+    @ManyToOne
+    @JoinColumn(name = "id_palestra", referencedColumnName = "id_palestra", nullable = false)
+    private Palestra palestra;
 
-    public Results(Integer correctAnswers, Integer score, Integer wrongAnswers,Double totalTime,User user, Palestra palestra) {
+    @Column(name = "start_time", nullable = false)
+    private LocalDateTime startTime;
+
+    @Column(name = "end_time")
+    private LocalDateTime endTime;
+
+    public Results(Integer correctAnswers, Integer score, Integer wrongAnswers, User user, Palestra palestra) {
         this.correctAnswers = correctAnswers;
         this.score = score;
         this.wrongAnswers = wrongAnswers;
-        this.totalTime = totalTime;
         this.user = user;
         this.palestra = palestra;
+        this.startTime = LocalDateTime.now();
     }
-    public Results(Long idResult, Integer correctAnswers, Integer score, Integer wrongAnswers,Double totalTime,User user) {
-        this.idResult = idResult;
+
+
+    public Results(Integer correctAnswers, Integer score, Integer wrongAnswers, Double totalTime, User user) {
         this.correctAnswers = correctAnswers;
         this.score = score;
         this.wrongAnswers = wrongAnswers;
         this.totalTime = totalTime;
         this.user = user;
+        this.startTime = LocalDateTime.now();
     }
 }

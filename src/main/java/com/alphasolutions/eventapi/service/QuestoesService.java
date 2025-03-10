@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.rmi.NoSuchObjectException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class QuestoesService {
@@ -23,7 +24,12 @@ public class QuestoesService {
     }
 
     public Questoes findById(Long id) {
-        return questoesRepository.findById(id).orElse(null);
+        Questoes questoes =  questoesRepository.findById(id).orElse(null);
+
+        if (questoes == null) {
+            throw new NoSuchElementException("Não encontrado");
+        }
+        return questoes;
     }
 
     public Questoes save(Questoes questoes) {
