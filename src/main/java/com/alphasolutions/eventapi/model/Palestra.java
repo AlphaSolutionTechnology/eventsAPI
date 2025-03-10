@@ -1,5 +1,7 @@
 package com.alphasolutions.eventapi.model;
 
+import java.sql.Timestamp;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +31,12 @@ public class Palestra {
 
     @Column(name="unique_code", unique = true)
     private String uniqueCode;
+
+    @Column(name="quizz_liberado", nullable = false)
+    private Boolean quizzLiberado;
+
+    @Column(name="hora_liberacao", nullable = true)
+    private Timestamp horaLiberacao;
 
     public Palestra(Long id, User user){
         this.id = id;

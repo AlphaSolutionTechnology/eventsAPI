@@ -1,12 +1,16 @@
 package com.alphasolutions.eventapi.service;
 
 
+import java.security.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
 import com.alphasolutions.eventapi.model.PalestraDTO;
 import jakarta.transaction.Transactional;
+
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.User;
@@ -108,5 +112,26 @@ public class PalestraService {
         if (palestraRepository.existsById(id)) {
             userRepository.unsubscribeUsersFromPalestra(id);
         }
+    }
+
+    @Transactional
+    public boolean liberarQuiz(Long palestraId, java.sql.Timestamp horaLiberacao) {
+        // Caso horaLiberacao seja fornecida, agenda para o futuro
+        if (horaLiberacao != null) {
+            // Salva no banco a hora de liberação (em uma coluna, por exemplo)
+            palestraRepository.atualizarHoraLiberacao(palestraId, horaLiberacao);
+            return false; // Não libera imediatamente
+        } else {
+            // Se não fornecer horaLiberacao, libera o quiz agora
+            palestraRepository.atualizarQuizzLiberado(palestraId);
+            return true; // Liberado imediatamente
+        }
+    }
+
+    // Método agendado para liberar automaticamente o quiz no horário configurado
+    @Scheduled(fixedRate = 60000)
+    public void verificarLiberacao() {
+        // Lógica para verificar quais quizzes devem ser liberados
+        palestraRepository.liberarQuizzNaHoraConfigurada();
     }
 }
