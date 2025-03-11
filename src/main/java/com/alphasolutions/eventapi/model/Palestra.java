@@ -42,5 +42,15 @@ public class Palestra {
         this.id = id;
         this.user = user;
     }
+
+    @Override
+    public String toString() {
+    return "Palestra{" +
+            "id=" + id +
+            ", tema='" + tema + '\'' +
+            ", evento=" + (evento != null ? evento.getId() : "null") +
+            '}';
+}
+
 }
 

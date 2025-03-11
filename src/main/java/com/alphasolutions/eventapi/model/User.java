@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
@@ -73,4 +75,15 @@ public class User {
         this.password = password;
         this.uniqueCode = uniqueCode;
     }
+
+    @Override
+    public String toString() {
+    return "User{" +
+            "id=" + id +
+            ", nome='" + nome + '\'' +
+            ", email='" + email + '\'' +
+            ", evento=" + (evento != null ? evento.getId() : "null") +
+            '}';
+}
+
 }

@@ -29,7 +29,7 @@ public class PalestraController {
     private final PalestraRepository palestraRepository;
     private final PalestraService palestraService;
     private final UserService userService;
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     public PalestraController(
             PalestraRepository palestraRepository,
@@ -42,6 +42,7 @@ public class PalestraController {
         this.palestraService = palestraService;
         this.authService = authService;
         this.userService = userService;
+        this.simpMessagingTemplate =simpMessagingTemplate;
     }
 
     @GetMapping("/verificarPalestra/{uniqueCode}")
