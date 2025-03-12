@@ -160,10 +160,10 @@ public class QuestoesController {
             User user = userService.getUserByToken(eventToken);
             Palestra palestra = palestraService.findPalestraById(idPalestra);
             Optional<Results> result = resultService.findResultByUserAndPalestra(user, palestra);
-            if(!result.isEmpty()){
+            if(result.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + palestra);
             }
-            boolean isPending = result.isEmpty() || result.get().getEndTime() == null;
+            boolean isPending = result.get().getEndTime() == null;
             return ResponseEntity.ok(Map.of("quizzStatus", isPending ? "Pendente" : "Concluído"));
         } catch (InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)

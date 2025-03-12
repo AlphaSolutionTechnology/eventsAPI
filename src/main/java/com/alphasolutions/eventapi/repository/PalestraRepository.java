@@ -36,5 +36,7 @@ public interface PalestraRepository extends JpaRepository<Palestra, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE Palestra p SET p.quizzLiberado = true WHERE p.horaLiberacao <= CURRENT_TIMESTAMP AND p.quizzLiberado = false")
-    void liberarQuizzNaHoraConfigurada();
+    int liberarQuizzNaHoraConfigurada();
+    
+
 }

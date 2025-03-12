@@ -129,9 +129,12 @@ public class PalestraService {
     }
 
     // Método agendado para liberar automaticamente o quiz no horário configurado
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 10000)
+    @Transactional
     public void verificarLiberacao() {
         // Lógica para verificar quais quizzes devem ser liberados
-        palestraRepository.liberarQuizzNaHoraConfigurada();
+        System.out.println("Executando verificação de liberação do quiz...");
+        int updated = palestraRepository.liberarQuizzNaHoraConfigurada();
+        System.out.println("Quizzes liberados: " + updated);
     }
 }

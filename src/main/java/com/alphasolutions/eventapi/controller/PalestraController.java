@@ -4,6 +4,7 @@ import com.alphasolutions.eventapi.exception.*;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.PalestraDTO;
 import com.alphasolutions.eventapi.model.PalestraIdsDTO;
+import com.alphasolutions.eventapi.model.QuizzStatusResponse;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -29,20 +33,19 @@ public class PalestraController {
     private final PalestraRepository palestraRepository;
     private final PalestraService palestraService;
     private final UserService userService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+  
 
     public PalestraController(
             PalestraRepository palestraRepository,
             JwtUtil jwtUtil,
             PalestraService palestraService,
             UserRepository userRepository,
-            AuthService authService, UserService userService,
-            SimpMessagingTemplate simpMessagingTemplate) {
+            AuthService authService, UserService userService) {
         this.palestraRepository = palestraRepository;
         this.palestraService = palestraService;
         this.authService = authService;
         this.userService = userService;
-        this.simpMessagingTemplate =simpMessagingTemplate;
+     
     }
 
     @GetMapping("/verificarPalestra/{uniqueCode}")
@@ -209,7 +212,6 @@ public class PalestraController {
             boolean liberado = palestraService.liberarQuiz(palestraId, horaLiberacao);
     
             if (liberado) {
-                simpMessagingTemplate.convertAndSend("/topic/quizz-liberado", palestraId);
                 return ResponseEntity.ok("Quiz liberado com sucesso!");
             } else {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body("Quiz agendado para liberação.");
@@ -223,6 +225,32 @@ public class PalestraController {
     }
     
 
+    @GetMapping("/isReleased/{idPalestra}")
+    public ResponseEntity<?> verificarQuizzLiberado(@CookieValue(value = "eventToken") String eventToken, @PathVariable Long idPalestra) {
+        try{
+            authService.authenticate(eventToken);
+            
+            Palestra palestra = palestraService.findPalestraById(idPalestra);
+            Timestamp horaLiberacao = palestra.getHoraLiberacao();
+            boolean isQuizzReleased = palestra.getQuizzLiberado();
     
+            if(isQuizzReleased){
+                return ResponseEntity.ok(new QuizzStatusResponse("Quizz está liberado!", null));
+            } else if (!isQuizzReleased && horaLiberacao != null){
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new QuizzStatusResponse("Quizz ainda não foi liberado.", horaLiberacao));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("isQuizzReleased está como null.", null));
+            } 
+        } catch (QuizException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("Ocorreu um erro com o quizz: " + e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new QuizzStatusResponse("Ocorreu um erro inesperado: " + e.getMessage(), null));
+        }
 
+
+
+
+    }
+    
 }
+
