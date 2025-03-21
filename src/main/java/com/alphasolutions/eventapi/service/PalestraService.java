@@ -5,6 +5,8 @@ import java.security.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
 import com.alphasolutions.eventapi.model.PalestraDTO;
@@ -21,7 +23,7 @@ import com.alphasolutions.eventapi.utils.IdentifierGenerator;
 @Service
 public class PalestraService {
     
-
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final PalestraRepository palestraRepository;
     private final RankingService rankingService;
     private final UserRepository userRepository;
@@ -114,27 +116,11 @@ public class PalestraService {
         }
     }
 
-    @Transactional
-    public boolean liberarQuiz(Long palestraId, java.sql.Timestamp horaLiberacao) {
-        // Caso horaLiberacao seja fornecida, agenda para o futuro
-        if (horaLiberacao != null) {
-            // Salva no banco a hora de liberação (em uma coluna, por exemplo)
-            palestraRepository.atualizarHoraLiberacao(palestraId, horaLiberacao);
-            return false; // Não libera imediatamente
-        } else {
-            // Se não fornecer horaLiberacao, libera o quiz agora
-            palestraRepository.atualizarQuizzLiberado(palestraId);
-            return true; // Liberado imediatamente
-        }
+    
     }
 
-    // Método agendado para liberar automaticamente o quiz no horário configurado
-    @Scheduled(fixedRate = 10000)
-    @Transactional
-    public void verificarLiberacao() {
-        // Lógica para verificar quais quizzes devem ser liberados
-        System.out.println("Executando verificação de liberação do quiz...");
-        int updated = palestraRepository.liberarQuizzNaHoraConfigurada();
-        System.out.println("Quizzes liberados: " + updated);
-    }
-}
+
+
+
+
+

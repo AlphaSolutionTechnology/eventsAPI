@@ -10,6 +10,7 @@ import com.alphasolutions.eventapi.repository.PalestraRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.PalestraService;
+import com.alphasolutions.eventapi.service.QuizzSchedulerService;
 import com.alphasolutions.eventapi.service.RankingService;
 import com.alphasolutions.eventapi.service.UserService;
 import com.alphasolutions.eventapi.utils.JwtUtil;
@@ -33,6 +34,7 @@ public class PalestraController {
     private final PalestraRepository palestraRepository;
     private final PalestraService palestraService;
     private final UserService userService;
+    private final QuizzSchedulerService quizzSchedulerService;
   
 
     public PalestraController(
@@ -40,12 +42,14 @@ public class PalestraController {
             JwtUtil jwtUtil,
             PalestraService palestraService,
             UserRepository userRepository,
-            AuthService authService, UserService userService) {
+            AuthService authService,
+            UserService userService,
+            QuizzSchedulerService quizzSchedulerService) {
         this.palestraRepository = palestraRepository;
         this.palestraService = palestraService;
         this.authService = authService;
         this.userService = userService;
-     
+        this.quizzSchedulerService = quizzSchedulerService;
     }
 
     @GetMapping("/verificarPalestra/{uniqueCode}")
@@ -209,9 +213,9 @@ public class PalestraController {
             String horaProgramadaStr = (String) requestBody.get("horaProgramada");
             Timestamp horaLiberacao = horaProgramadaStr != null ? Timestamp.valueOf(horaProgramadaStr) : null;
             
-            boolean liberado = palestraService.liberarQuiz(palestraId, horaLiberacao);
+            quizzSchedulerService.liberarOuAgendarQuizz(palestraId, horaLiberacao);
     
-            if (liberado) {
+            if (horaLiberacao == null) {
                 return ResponseEntity.ok("Quiz liberado com sucesso!");
             } else {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body("Quiz agendado para liberação.");
@@ -251,6 +255,6 @@ public class PalestraController {
 
 
     }
-    
+
 }
 

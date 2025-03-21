@@ -21,6 +21,8 @@ public interface PalestraRepository extends JpaRepository<Palestra, Long> {
     Optional<Palestra> findByUniqueCode(String uniqueCode);
     void removePalestraById(Long id);
     List<Palestra> findAllByUser(User user);
+    List<Palestra> findAllByQuizzLiberadoFalse();
+
     
     
     @Modifying
@@ -32,11 +34,5 @@ public interface PalestraRepository extends JpaRepository<Palestra, Long> {
     @Transactional
     @Query("UPDATE Palestra p SET p.horaLiberacao = :hora WHERE p.id = :palestraId")
     void atualizarHoraLiberacao(Long palestraId, Timestamp hora);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE Palestra p SET p.quizzLiberado = true WHERE p.horaLiberacao <= CURRENT_TIMESTAMP AND p.quizzLiberado = false")
-    int liberarQuizzNaHoraConfigurada();
     
-
 }
