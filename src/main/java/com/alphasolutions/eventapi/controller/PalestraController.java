@@ -20,9 +20,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -35,6 +34,7 @@ public class PalestraController {
     private final PalestraService palestraService;
     private final UserService userService;
     private final QuizzSchedulerService quizzSchedulerService;
+    private final SimpMessagingTemplate messagingTemplate;
   
 
     public PalestraController(
@@ -44,12 +44,14 @@ public class PalestraController {
             UserRepository userRepository,
             AuthService authService,
             UserService userService,
-            QuizzSchedulerService quizzSchedulerService) {
+            QuizzSchedulerService quizzSchedulerService,
+            SimpMessagingTemplate messagingTemplate) {    
         this.palestraRepository = palestraRepository;
         this.palestraService = palestraService;
         this.authService = authService;
         this.userService = userService;
         this.quizzSchedulerService = quizzSchedulerService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @GetMapping("/verificarPalestra/{uniqueCode}")
@@ -214,8 +216,17 @@ public class PalestraController {
             Timestamp horaLiberacao = horaProgramadaStr != null ? Timestamp.valueOf(horaProgramadaStr) : null;
             
             quizzSchedulerService.liberarOuAgendarQuizz(palestraId, horaLiberacao);
+            
+            LocalDateTime horaConvertida = horaLiberacao.toLocalDateTime();
+            LocalDateTime agora = LocalDateTime.now();
     
-            if (horaLiberacao == null) {
+            if (horaConvertida.equals(agora) || horaConvertida.isBefore(agora)) {
+                messagingTemplate.convertAndSend("/topic/quizz-liberado", Map.of(
+                "type", "quiz_liberado",
+                "idPalestra", palestraId,
+                "message", "O quiz foi liberado agora!"
+            ));
+
                 return ResponseEntity.ok("Quiz liberado com sucesso!");
             } else {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body("Quiz agendado para liberação.");
@@ -243,7 +254,7 @@ public class PalestraController {
             } else if (!isQuizzReleased && horaLiberacao != null){
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new QuizzStatusResponse("Quizz ainda não foi liberado.", horaLiberacao));
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("isQuizzReleased está como null.", null));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("isQuizzReleased é falso e horaLiberação null.", null));
             } 
         } catch (QuizException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("Ocorreu um erro com o quizz: " + e.getMessage(), null));
