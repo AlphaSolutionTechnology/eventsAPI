@@ -250,16 +250,16 @@ public class PalestraController {
             boolean isQuizzReleased = palestra.getQuizzLiberado();
     
             if(isQuizzReleased){
-                return ResponseEntity.ok(new QuizzStatusResponse("Quizz está liberado!", null));
+                return ResponseEntity.ok(new QuizzStatusResponse("Quizz está liberado!"));
             } else if (!isQuizzReleased && horaLiberacao != null){
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new QuizzStatusResponse("Quizz ainda não foi liberado.", horaLiberacao));
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new QuizzStatusResponse("Quizz ainda não foi liberado."));
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("isQuizzReleased é falso e horaLiberação null.", null));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("isQuizzReleased é falso e horaLiberação null."));
             } 
         } catch (QuizException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("Ocorreu um erro com o quizz: " + e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new QuizzStatusResponse("Ocorreu um erro com o quizz: " + e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new QuizzStatusResponse("Ocorreu um erro inesperado: " + e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new QuizzStatusResponse("Ocorreu um erro inesperado: " + e.getMessage()));
         }
 
 

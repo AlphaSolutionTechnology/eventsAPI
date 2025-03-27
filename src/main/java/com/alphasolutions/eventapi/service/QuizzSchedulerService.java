@@ -1,9 +1,12 @@
 package com.alphasolutions.eventapi.service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alphasolutions.eventapi.repository.PalestraRepository;
@@ -15,11 +18,14 @@ import jakarta.transaction.Transactional;
 public class QuizzSchedulerService {
 
 
-    private PalestraRepository palestraRepository;
+    private final PalestraRepository palestraRepository;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public QuizzSchedulerService(PalestraRepository palestraRepository){
+    public QuizzSchedulerService(PalestraRepository palestraRepository,
+                                 SimpMessagingTemplate messagingTemplate) {
         this.palestraRepository = palestraRepository;
+        this.messagingTemplate = messagingTemplate; 
     }
 
 
@@ -32,7 +38,7 @@ public class QuizzSchedulerService {
         agendarLiberacaoQuizz(palestraId, horaLiberacao);
     } else {
         // Liberar imediatamente
-        palestraRepository.atualizarQuizzLiberado(palestraId);
+        palestraRepository.atualizarQuizzLiberado(palestraId);  
     }
     }
 
@@ -45,6 +51,12 @@ public class QuizzSchedulerService {
         scheduler.schedule(() -> {
             System.out.println("Liberando quiz para a palestra " + idPalestra);
             liberarOuAgendarQuizz(idPalestra, null);  // Força liberação imediata
+            messagingTemplate.convertAndSend("/topic/quizz-agendado", Map.of(
+                "type", "quizz_agendado",
+                "idPalestra", idPalestra,
+                "horaLiberacao", horaLiberacao.toString(),
+                "message", "Quiz agendado foi liberado."
+            ));
         }, delay, TimeUnit.SECONDS);
     }
 
