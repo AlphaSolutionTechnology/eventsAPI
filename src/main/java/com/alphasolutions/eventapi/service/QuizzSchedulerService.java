@@ -53,9 +53,7 @@ public class QuizzSchedulerService {
             liberarOuAgendarQuizz(idPalestra, null);  // Força liberação imediata
             messagingTemplate.convertAndSend("/topic/quizz-agendado", Map.of(
                 "type", "quizz_agendado",
-                "idPalestra", idPalestra,
-                "horaLiberacao", horaLiberacao.toString(),
-                "message", "Quiz agendado foi liberado."
+                "idPalestra", idPalestra
             ));
         }, delay, TimeUnit.SECONDS);
     }

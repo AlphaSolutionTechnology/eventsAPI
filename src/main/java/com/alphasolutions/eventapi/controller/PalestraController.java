@@ -223,8 +223,7 @@ public class PalestraController {
             if (horaConvertida.equals(agora) || horaConvertida.isBefore(agora)) {
                 messagingTemplate.convertAndSend("/topic/quizz-liberado", Map.of(
                 "type", "quiz_liberado",
-                "idPalestra", palestraId,
-                "message", "O quiz foi liberado agora!"
+                "idPalestra", palestraId
             ));
 
                 return ResponseEntity.ok("Quiz liberado com sucesso!");
