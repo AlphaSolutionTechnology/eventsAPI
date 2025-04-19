@@ -44,8 +44,8 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
             uniqueCode = IdentifierGenerator.generateIdentity(6);
         }while(userRepository.existsById(uniqueCode));
 
-        user = userRepository.save(new User(googlePayload.getSubject(),(String) googlePayload.get("name"),new Role(2L,"Participante"),new Evento(1L,"Primeiro Evento"),(String) googlePayload.get("email"),null,uniqueCode));
-        rankingService.inscreverUsuarioNoRanking(new Evento(1L,"Primeiro Evento"),user);
+        user = userRepository.save(new User(googlePayload.getSubject(),(String) googlePayload.get("name"),new Role(2L,"Participante"),null ,(String) googlePayload.get("email"),null,uniqueCode));
+        // rankingService.inscreverUsuarioNoRanking(new Evento(1L,"Primeiro Evento"),user);
         return jwtUtil.generateToken(user);
     }
 

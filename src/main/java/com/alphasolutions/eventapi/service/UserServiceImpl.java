@@ -52,11 +52,10 @@ public class UserServiceImpl implements UserService {
         }
         User userInDatabase = userRepository.findById(userDTO.getId()).orElse(null);
         if(userInDatabase == null) {
-            Evento evento = new Evento(1L,"Primeiro Evento");
             Role role = new Role(2L,"Participante");
-            User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
+            User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,null,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
             userRepository.save(userWithPassword);
-            rankingService.inscreverUsuarioNoRanking(evento, userWithPassword);
+            // rankingService.inscreverUsuarioNoRanking(evento, userWithPassword);
         }
     }
 
