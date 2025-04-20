@@ -44,6 +44,12 @@ public class User {
     @Column(name = "unique_code",updatable = false,nullable = false)
     private String uniqueCode;
 
+    @Column(name = "avatar_seed")
+    private String avatarSeed;
+
+    @Column(name = "avatar_style")
+    private String avatarStyle;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP(3) DEFAULT NOW()")
     private Instant createdAt;
@@ -55,7 +61,15 @@ public class User {
     @JoinColumn(name = "palestra_atual", referencedColumnName = "id_palestra", nullable = true, updatable = true)
     private Palestra palestra;
 
-    public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode) {
+    // getter personalizado para gerar url dinamicamente
+    public String getAvatarUrl() {
+        if (this.avatarSeed == null || this.avatarStyle == null) {
+            return null;
+        }
+        return "https://api.dicebear.com/8.x/" + avatarStyle + "/png?seed=" + avatarSeed;
+    }
+
+    public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode, String avatarSeed, String avatarStyle, String avatarUrl) {
         this.id = id;
         this.nome = nome;
         this.role = role;
@@ -63,9 +77,11 @@ public class User {
         this.email = email;
         this.redeSocial = redeSocial;
         this.uniqueCode = uniqueCode;
+        this.avatarSeed = avatarSeed;
+        this.avatarStyle = avatarStyle;
     }
 
-    public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode) {
+    public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode, String avatarSeed, String avatarStyle, String avatarUrl) {
         this.id = id;
         this.nome = username;
         this.role = role;
@@ -74,16 +90,22 @@ public class User {
         this.redeSocial = redesocial;
         this.password = password;
         this.uniqueCode = uniqueCode;
+        this.avatarSeed = avatarSeed;
+        this.avatarStyle = avatarStyle;
     }
 
     @Override
     public String toString() {
-    return "User{" +
-            "id=" + id +
-            ", nome='" + nome + '\'' +
-            ", email='" + email + '\'' +
-            ", evento=" + (evento != null ? evento.getId() : "null") +
-            '}';
-}
+        return "User{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", email='" + email + '\'' +
+                ", evento=" + (evento != null ? evento.getId() : "null") + '\'' +  
+                ", avatarSeed= " + avatarSeed + '\'' + 
+                ", avatarStyle= " + avatarStyle + '\'' +
+                ", avatarUrl= " + getAvatarUrl() + '\'' +
+                '}';
+        
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.alphasolutions.eventapi.utils;
 
 
+import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.google.auth.oauth2.TokenVerifier;
@@ -27,11 +28,17 @@ public class JwtUtil {
     private String secretKey;
 
     public String generateToken(User user) {
+        if (user.getAvatarSeed() == null || user.getAvatarStyle() == null) {
+            throw new IllegalStateException("user avatar nao configurado");
+        }
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("email",user.getEmail());
         claims.put("name",user.getNome());
         claims.put("role",user.getRole().getRole());
         claims.put("unique_code",user.getUniqueCode());
+        claims.put("avatar_seed", user.getAvatarSeed());
+        claims.put("avatar_style", user.getAvatarStyle());
 
         return Jwts.builder()
                 .subject(user.getId())
@@ -42,13 +49,19 @@ public class JwtUtil {
                 .compact();
     }
 
-    private boolean validateToken(String token) {
+    public boolean validateToken(String token) {
         try {
-            Jwts
-                .parser()
+            Claims claims = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
                 .build()
-                .parseSignedClaims(token);
+                .parseSignedClaims(token)
+                .getPayload();
+
+            // Valida campos críticos
+            if (claims.get("avatar_seed") == null || claims.get("avatar_style") == null) {
+                throw new InvalidTokenException("Avatar claims missing");
+            }
+            
             return true;
         } catch (Exception e) {
             return false;
@@ -57,6 +70,7 @@ public class JwtUtil {
 
     public Map<String,Object> extractClaim(String token){
         if(validateToken(token)) {
+
             try {
                 Claims claims = Jwts
                         .parser()
@@ -70,6 +84,9 @@ public class JwtUtil {
                 claimsMap.put("name", claims.get("name"));
                 claimsMap.put("role", claims.get("role"));
                 claimsMap.put("unique_code", claims.get("unique_code"));
+                claimsMap.put("avatar_seed", claims.get("avatar_seed"));
+                claimsMap.put("avatar_style", claims.get("avatar_style"));
+
                 return claimsMap;
             } catch (Exception e) {
                 return Map.of("error",e.getMessage());
