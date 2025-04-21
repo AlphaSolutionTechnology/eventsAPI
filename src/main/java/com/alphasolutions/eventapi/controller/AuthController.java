@@ -4,6 +4,7 @@ import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import com.alphasolutions.eventapi.model.UserDTO;
+import com.alphasolutions.eventapi.model.UserResponseDTO;
 import com.alphasolutions.eventapi.service.*;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.repository.UserRepository;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -30,6 +33,8 @@ public class AuthController {
     private final AuthorizationService authorizationService;
     public JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
 
     public AuthController(JwtUtil jwtUtil, CookieService cookieService, AuthService authService, UserService userService, GoogleAuthService googleAuthService, AuthorizationService authorizationService, UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -45,39 +50,24 @@ public class AuthController {
         return "https://api.dicebear.com/8.x/" + style + "/svg?seed=" + seed;
     }
 
-    @PostMapping(path = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpServletResponse response) {
         try {
-            // 1. Autenticação
+            // 1. Autentica o usuário
             String token = authService.authenticate(userDTO.getEmail(), userDTO.getPassword());
             
-            // 2. Buscar usuário COMPLETO do banco
+            // 2. Busca o usuário no banco
             User user = userRepository.findByEmailWithAvatar(userDTO.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("Credenciais inválidas"));
+                    .orElseThrow(() -> new UserNotFoundException("Credenciais inválidas"));
 
-            // 3. Construir resposta MANUALMENTE
-            Map<String, Object> userData = new LinkedHashMap<>();
-            userData.put("id", user.getId());
-            userData.put("name", user.getNome());
-            userData.put("email", user.getEmail());
-            userData.put("role", user.getRole().getRole());
-            userData.put("unique_code", user.getUniqueCode());
-            userData.put("avatar_style", user.getAvatarStyle()); // ← Campo crítico
-            userData.put("avatar_seed", user.getAvatarSeed());   // ← Campo crítico
-
-            String avatarUrl = "https://api.dicebear.com/7.x/" + 
-                            user.getAvatarStyle() + 
-                            "/svg?seed=" + 
-                            user.getAvatarSeed();
-
-            // 4. Configurar cookie
+            // 3. Cria a resposta com UserResponseDTO
+            UserResponseDTO userResponse = new UserResponseDTO(user);
+            
+            // 4. Configura o cookie
             ResponseCookie cookie = cookieService.createCookie(token);
             response.addHeader("Set-Cookie", cookie.toString());
 
-            return ResponseEntity.ok().body(Map.of(
-                "data", userData,
-                "avatarUrl", avatarUrl
-            ));
+            return ResponseEntity.ok().body(Map.of("data", userResponse));
 
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -147,23 +137,23 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<?> validate(@CookieValue(value = "eventToken", required = false) String existingToken) {
+    public ResponseEntity<?> validate(@CookieValue("eventToken") String token) {
         try {
-            authService.authenticate(existingToken);
-            Map<String, Object> claims = jwtUtil.extractClaim(existingToken);
-            String avatarUrl = buildAvatarUrl(
-                (String) claims.get("avatar_style"), 
-                (String) claims.get("avatar_seed")
-            );
+            // 1. Valida o token
+            authService.authenticate(token);
             
-            return ResponseEntity.ok().body(Map.of(
-                "data", claims,
-                "avatarUrl", avatarUrl
-            ));
+            // 2. Extrai os claims do JWT
+            Map<String, Object> claims = jwtUtil.extractClaim(token);
+            
+            // 3. Busca o usuário no banco (ou usa os claims)
+            User user = userRepository.findById(claims.get("id").toString())
+                    .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+            
+            // 4. Retorna o DTO padronizado
+            return ResponseEntity.ok().body(Map.of("data", new UserResponseDTO(user)));
+
         } catch (InvalidTokenException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 

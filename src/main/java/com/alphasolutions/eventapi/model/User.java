@@ -44,18 +44,11 @@ public class User {
     @Column(name = "unique_code",updatable = false,nullable = false)
     private String uniqueCode;
 
-    @Column(name = "avatar_seed")
+    @Column(name = "avatar_seed", nullable = false)
     private String avatarSeed;
 
-    @Column(name = "avatar_style")
+    @Column(name = "avatar_style", nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'adventurer'")
     private String avatarStyle;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP(3) DEFAULT NOW()")
-    private Instant createdAt;
-
-    @Column(name = "is_email_verified" ,nullable = true)
-    private Boolean isEmailVerified;
 
     @ManyToOne
     @JoinColumn(name = "palestra_atual", referencedColumnName = "id_palestra", nullable = true, updatable = true)

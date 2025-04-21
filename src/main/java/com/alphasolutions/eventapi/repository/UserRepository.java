@@ -22,11 +22,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.role LEFT JOIN FETCH u.evento WHERE u.email = :email")
     Optional<User> findByEmailWithAvatar(@Param("email") String email);
     
-    // Novo método para buscar usuário por token JWT
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role LEFT JOIN FETCH u.evento WHERE u.id = " +
-           "(SELECT j.userId FROM JwtToken j WHERE j.token = :token)")
-    Optional<User> findByToken(@Param("token") String token);
-    
     @Modifying
     @Query("UPDATE User u SET u.palestra = NULL WHERE u.palestra.id = :palestraId")
     void unsubscribeUsersFromPalestra(@Param("palestraId") Long palestraId);

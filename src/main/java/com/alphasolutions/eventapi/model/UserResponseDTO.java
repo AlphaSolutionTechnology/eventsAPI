@@ -23,6 +23,8 @@ public class UserResponseDTO {
     private String eventoId;
     private String palestraId;
 
+    
+
     // Construtor que aceita User
     public UserResponseDTO(User user) {
         this.id = user.getId();
@@ -33,10 +35,16 @@ public class UserResponseDTO {
         this.redeSocial = user.getRedeSocial();
         this.avatarSeed = user.getAvatarSeed();
         this.avatarStyle = user.getAvatarStyle();
-        this.avatarUrl = user.getAvatarUrl();
-        this.createdAt = user.getCreatedAt();
-        this.isEmailVerified = user.getIsEmailVerified();
+        this.avatarUrl = generateAvatarUrl(user.getAvatarStyle(), user.getAvatarSeed());
+
         this.eventoId = user.getEvento() != null ? String.valueOf(user.getEvento().getId()) : null;
         this.palestraId = user.getPalestra() != null ? String.valueOf(user.getPalestra().getId()) : null;
+    }
+
+    private String generateAvatarUrl(String style, String seed) {
+        if (style == null || seed == null) {
+            return null;
+        }
+        return "https://api.dicebear.com/8.x/" + style + "/svg?seed=" + seed;
     }
 }

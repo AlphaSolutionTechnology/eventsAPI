@@ -22,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordUtils passwordUtils;
     private final IdentifierGenerator identifierGenerator;
     private final RankingService rankingService;
+    
 
 
     // Listando os estilos permitidos
@@ -96,7 +97,7 @@ public class UserServiceImpl implements UserService {
                 userDTO.getUniqueCode(),
                 userDTO.getAvatarSeed(),
                 userDTO.getAvatarStyle(),
-                null // gerado automaticamente
+                (String) null 
             );
 
             userRepository.save(userWithPassword);
@@ -115,6 +116,49 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new UserNotFoundException("Usuario nao encontrado"));
 
         user.setAvatarStyle(newStyle);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User findById(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+    }
+
+    @Override
+    @Transactional
+    public User updateUser(String userId, UserUpdateDTO updateDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
+        // Atualiza apenas campos permitidos
+        if (updateDTO.getName() != null) {
+            user.setNome(updateDTO.getName());
+        }
+        if (updateDTO.getEmail() != null) {
+            user.setEmail(updateDTO.getEmail());
+        }
+        
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User updateAvatar(String userId, String avatarStyle, String avatarSeed) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
+        // Validação do estilo (usando sua lista ALLOWED_AVATAR_STYLES)
+        if (!ALLOWED_AVATAR_STYLES.contains(avatarStyle.toLowerCase())) {
+            throw new IllegalArgumentException("Estilo de avatar não permitido");
+        }
+
+        user.setAvatarStyle(avatarStyle);
+        if (avatarSeed != null) {
+            user.setAvatarSeed(avatarSeed);
+        }
+
         return userRepository.save(user);
     }
 

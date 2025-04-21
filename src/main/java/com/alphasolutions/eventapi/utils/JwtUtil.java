@@ -28,20 +28,17 @@ public class JwtUtil {
     private String secretKey;
 
     public String generateToken(User user) {
-        if (user.getAvatarSeed() == null || user.getAvatarStyle() == null) {
-            throw new IllegalStateException("user avatar nao configurado");
-        }
-
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email",user.getEmail());
-        claims.put("name",user.getNome());
-        claims.put("role",user.getRole().getRole());
-        claims.put("unique_code",user.getUniqueCode());
+        claims.put("email", user.getEmail());
+        claims.put("nome", user.getNome());
+        claims.put("role", user.getRole().getRole());
+        claims.put("unique_code", user.getUniqueCode());
         claims.put("avatar_seed", user.getAvatarSeed());
         claims.put("avatar_style", user.getAvatarStyle());
-
+        claims.put("id", user.getId()); 
+        
         return Jwts.builder()
-                .subject(user.getId())
+                .subject(user.getId().toString())
                 .issuedAt(new Date())
                 .claims(claims)
                 .expiration(new Date(System.currentTimeMillis() + 3600 * 1000 * 24 * 7))
@@ -51,48 +48,42 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            Claims claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-            // Valida campos críticos
-            if (claims.get("avatar_seed") == null || claims.get("avatar_style") == null) {
-                throw new InvalidTokenException("Avatar claims missing");
+            Claims claims = extractAllClaims(token);
+            
+            // Validação mais robusta
+            if (claims.get("avatar_seed") == null || 
+                claims.get("avatar_style") == null ||
+                claims.getSubject() == null) {
+                throw new InvalidTokenException("Claims essenciais faltando");
             }
             
-            return true;
+            return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
         }
     }
 
-    public Map<String,Object> extractClaim(String token){
-        if(validateToken(token)) {
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
 
-            try {
-                Claims claims = Jwts
-                        .parser()
-                        .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
-                        .build()
-                        .parseSignedClaims(token)
-                        .getPayload();
-                Map<String, Object> claimsMap = new HashMap<>();
-                claimsMap.put("id", claims.getSubject());
-                claimsMap.put("email", claims.get("email"));
-                claimsMap.put("name", claims.get("name"));
-                claimsMap.put("role", claims.get("role"));
-                claimsMap.put("unique_code", claims.get("unique_code"));
-                claimsMap.put("avatar_seed", claims.get("avatar_seed"));
-                claimsMap.put("avatar_style", claims.get("avatar_style"));
-
-                return claimsMap;
-            } catch (Exception e) {
-                return Map.of("error",e.getMessage());
-            }
+    public Map<String, Object> extractClaim(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            // Retorna todos os claims diretamente (incluindo subject e expiration)
+            return new HashMap<>(claims);
+        } catch (Exception e) {
+            throw new InvalidTokenException("Token inválido ou expirado");
         }
-        return Map.of("error","Invalid Token");
     }
 
     public Payload verifyGoogleToken(String googleToken) {

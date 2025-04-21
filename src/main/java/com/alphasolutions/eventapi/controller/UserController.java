@@ -2,6 +2,8 @@ package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.UserResponseDTO;
+import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,117 +15,75 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.http.MediaType;
 import com.alphasolutions.eventapi.utils.JwtUtil; 
+import com.alphasolutions.eventapi.model.UserDTO;
+
+import com.alphasolutions.eventapi.model.UserUpdateDTO;
+import com.alphasolutions.eventapi.model.AvatarUpdateDTO;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private final JwtUtil jwtUtil;
 
     private final UserService userService;
-    private static final List<String> ALLOWED_AVATAR_STYLES = List.of(
-        "adventurer", 
-        "big-ears", 
-        "botts", 
-        "pixel-art"
-    );
+    private final JwtUtil jwtUtil;
 
-    @Autowired
+    //Injecao de dependencia
     public UserController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable String userId) {
-        User user = userService.getUserById(userId);
-        return ResponseEntity.ok(user);
-    }
-
-    // UserController.java
-    @PutMapping("/users/{userId}/avatar")
-    public ResponseEntity<?> updateAvatarStyle(
-        @PathVariable Long userId,
-        @RequestBody Map<String, String> request
-    ) {
-        try {
-            String newStyle = request.get("avatarStyle");
-            userService.updateUserAvatarStyle(String.valueOf(userId), newStyle);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Estilo inválido. Use: adventurer, pixel-art, bottts, lorelei");
-        }
-    }
-
-    @GetMapping("/avatar/styles")
-    public ResponseEntity<List<String>> getAvailableAvatarStyles() {
-        return ResponseEntity.ok(ALLOWED_AVATAR_STYLES);
-    }
-
+    // Buscar perfil do usuario autenticado
     @GetMapping("/me")
-public ResponseEntity<Map<String, Object>> getCurrentUser(
-    @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<UserResponseDTO> getCurrentUser(
+        @CookieValue("eventToken") String token
+    ) {
+        System.out.println("TOKEN RECEBIDO: " + token);
+        // Extrai o ID do usuário do token JWT
+        String userId = jwtUtil.extractClaim(token).get("id").toString();
+        
+        // Busca o usuário no banco
+        User user = userService.findById(userId);
+        
+        // Converte para DTO de resposta
+        UserResponseDTO response = new UserResponseDTO(user);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    // Atualizar avatar
+    @PatchMapping("/avatar")
+    public ResponseEntity<UserResponseDTO> updateAvatar(
+        @RequestBody AvatarUpdateDTO updateDTO,
+        @CookieValue("eventToken") String token
+    ) {
+        // Validação do token e extração do ID
+        String userId = jwtUtil.extractClaim(token).get("id").toString();
+        
+        // Atualiza no banco
+        User updatedUser = userService.updateAvatar(
+            userId,
+            updateDTO.getAvatarStyle(),
+            updateDTO.getAvatarSeed()
+        );
+        
+        // Retorna o usuário atualizado
+        return ResponseEntity.ok(new UserResponseDTO(updatedUser));
+    }
+
+    // Atualizar outros dados do usuário
+    @PutMapping("/me")
+    public ResponseEntity<UserResponseDTO> updateProfile(
+        @RequestBody UserUpdateDTO updateDTO,
+        @CookieValue("eventToken") String token
+    ) {
+        String userId = jwtUtil.extractClaim(token).get("id").toString();
+        
+        User updatedUser = userService.updateUser(userId, updateDTO);
+
+        return ResponseEntity.ok(new UserResponseDTO(updatedUser));
+    }
+
     
-    try {
-        String token = authHeader.replace("Bearer ", "");
-        // 1. Verifique se o token é válido
-        if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Invalid token"));
-        }
-
-        // 2. Obtenha o usuário
-        User user = userService.getUserByToken(token);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "User not found"));
-        }
-
-        // 3. Construa a resposta
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", user.getId());
-        response.put("email", user.getEmail());
-        response.put("avatarUrl", user.getAvatarUrl());
-        response.put("avatarSeed", user.getAvatarSeed());
-        response.put("avatarStyle", user.getAvatarStyle());
-        
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(response);
-            
-    } catch (Exception e) {
-        return ResponseEntity.internalServerError()
-            .body(Map.of("error", "Internal server error"));
-    }
-}
-
-    @GetMapping("/avatar/preview")
-    public ResponseEntity<String> getAvatarPreview(
-            @RequestParam String seed,
-            @RequestParam String style) {
-        
-        // Verificação manual do estilo
-        if (!ALLOWED_AVATAR_STYLES.contains(style)) {
-            throw new IllegalArgumentException("Estilo de avatar inválido");
-        }
-        
-        String previewUrl = String.format("https://api.dicebear.com/8.x/%s/png?seed=%s", style, seed);
-        return ResponseEntity.ok(previewUrl);
-    }
-
-    // Métodos auxiliares
-    private String extractToken(String authHeader) {
-        return authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-    }
-
-    private void validateUserOwnership(String token, String userId) {
-        String jwtToken = extractToken(token);
-        User requestingUser = userService.getUserByToken(jwtToken);
-        
-        if (!requestingUser.getId().equals(userId)) {
-            throw new SecurityException("Usuário não autorizado a modificar este recurso");
-        }
-    }
+    
 }
