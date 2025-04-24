@@ -55,6 +55,18 @@ public class User {
     @JoinColumn(name = "palestra_atual", referencedColumnName = "id_palestra", nullable = true, updatable = true)
     private Palestra palestra;
 
+    @Column(name = "avatar_seed")
+    private String avatarSeed;
+
+    @Column(name = "avatar_style")
+    private String avatarStyle;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
+    @Column(name = "bio")
+    private String bio;
+
     public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode) {
         this.id = id;
         this.nome = nome;
