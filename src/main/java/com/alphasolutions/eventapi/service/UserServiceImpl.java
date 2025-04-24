@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -21,6 +22,16 @@ public class UserServiceImpl implements UserService {
     private final PasswordUtils passwordUtils;
     private final IdentifierGenerator identifierGenerator;
     private final RankingService rankingService;
+    
+
+
+    // Listando os estilos permitidos
+    private final List<String> ALLOWED_AVATAR_STYLES = List.of(
+        "adventurer",
+        "big-ears",
+        "botts",
+        "pixel-art"
+    );
 
     public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, RankingService rankingService,PasswordUtils passwordUtils, IdentifierGenerator identifierGenerator) {
         this.userRepository = userRepository;
@@ -37,27 +48,123 @@ public class UserServiceImpl implements UserService {
         if(isEmailAlreadyExists(userDTO.getEmail())){
             throw new UserAlreadyExistsException("Já existe uma conta criada com este email!");
         }
+
         if(userDTO.getId() == null) {
             String id;
             String uniqueCode;
+
             do {
                 id = IdentifierGenerator.generateIdentity(21);
-            }while(userRepository.existsById(id));
+            } while(userRepository.existsById(id));
+
             do {
                 uniqueCode = identifierGenerator.generateUniqueCode();
-            }while (userRepository.existsByUniqueCode(uniqueCode));
+            } while (userRepository.existsByUniqueCode(uniqueCode));
+
+            // Se for novo usuario, gerar seed se nao existir
+            if (userDTO.getAvatarSeed() == null) {
+                userDTO.setAvatarSeed(userDTO.getEmail() + "-" + System.currentTimeMillis());
+            }
+
+            // Definir estilo padrao se nao existir
+            if (userDTO.getAvatarStyle() == null) {
+                userDTO.setAvatarStyle("adventurer");
+            }
+
+            System.out.println("Avatar Seed: " + userDTO.getAvatarSeed());
+            System.out.println("Avatar Style: " + userDTO.getAvatarStyle());
+            
             userDTO.setId(id);
             userDTO.setUniqueCode(uniqueCode);
             userDTO.setPassword(passwordUtils.hashPassword(userDTO.getPassword()));
         }
+
         User userInDatabase = userRepository.findById(userDTO.getId()).orElse(null);
+
         if(userInDatabase == null) {
+
             Evento evento = new Evento(1L,"Primeiro Evento");
             Role role = new Role(2L,"Participante");
-            User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,evento,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
+
+            User userWithPassword = new User(
+                userDTO.getId(),
+                userDTO.getUsername(),
+                role,
+                evento,
+                userDTO.getEmail(),
+                userDTO.getRedeSocial(),
+                userDTO.getPassword(),
+                userDTO.getUniqueCode(),
+                userDTO.getAvatarSeed(),
+                userDTO.getAvatarStyle(),
+                (String) null 
+            );
+
             userRepository.save(userWithPassword);
             rankingService.inscreverUsuarioNoRanking(evento, userWithPassword);
         }
+    }
+
+    @Override
+    public User updateUserAvatarStyle(String userId, String newStyle) {
+
+        if (!ALLOWED_AVATAR_STYLES.contains(newStyle.toLowerCase())) {
+            throw new IllegalArgumentException("Estilo de avatar nao permitido");
+        }
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException("Usuario nao encontrado"));
+
+        user.setAvatarStyle(newStyle);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User findById(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+    }
+
+    @Override
+    @Transactional
+    public User updateUser(String userId, UserUpdateDTO updateDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
+        // Atualiza apenas campos permitidos
+        if (updateDTO.getName() != null) {
+            user.setNome(updateDTO.getName());
+        }
+        if (updateDTO.getEmail() != null) {
+            user.setEmail(updateDTO.getEmail());
+        }
+        
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User updateAvatar(String userId, String avatarStyle, String avatarSeed) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
+        // Validação do estilo (usando sua lista ALLOWED_AVATAR_STYLES)
+        if (!ALLOWED_AVATAR_STYLES.contains(avatarStyle.toLowerCase())) {
+            throw new IllegalArgumentException("Estilo de avatar não permitido");
+        }
+
+        user.setAvatarStyle(avatarStyle);
+        if (avatarSeed != null) {
+            user.setAvatarSeed(avatarSeed);
+        }
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    public List<String> getAvailableAvatarStyles() {
+        return List.of("adventurer", "big-ears", "botts", "pixel-art");
     }
 
     @Override
@@ -69,6 +176,7 @@ public class UserServiceImpl implements UserService {
     public User getUserByToken(String eventToken) {
         Map<String, Object> tokenData = jwtUtil.extractClaim(eventToken);
         User user = userRepository.findById(tokenData.get("id").toString()).orElse(null);
+
         if(user != null) {
             return user;
         }
@@ -80,7 +188,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User checkEmailAndPasswordValidityAndReturnUser(String email, String password) {
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmailWithAvatar(email).orElse(null);
+
         if(user == null) {
             throw new UserNotFoundException("Usuário não encontrado!");
         }
@@ -90,11 +199,29 @@ public class UserServiceImpl implements UserService {
     public UserDTO prepareUserWithGoogleData(JsonWebToken.Payload googlePayload) {
         var email = googlePayload.get("email");
         var name = googlePayload.get("name");
+
         String uniqueCode;
         do {
             uniqueCode = identifierGenerator.generateUniqueCode();
-        }while (userRepository.existsByUniqueCode(uniqueCode));
-        return new UserDTO(googlePayload.getSubject(), (String) name, (String) email,null, uniqueCode ,null);
+        } while (userRepository.existsByUniqueCode(uniqueCode));
+
+        // Gerar um seed unico para o avatar ( usando email+ timestamp )
+        String avatarSeed = (String) email + "-" + System.currentTimeMillis();
+
+        // Definir um estilo padrao inicial ( Pode ser aleatorio ou fixo )
+        String avatarStyle = "adventurer"; // Estilo padrao inicial
+
+        return new UserDTO(
+            googlePayload.getSubject(),
+            (String) name,
+            (String) email,
+            null,
+            uniqueCode,
+            null,
+            avatarSeed,
+            avatarStyle,
+            null
+        );
 
     }
 }

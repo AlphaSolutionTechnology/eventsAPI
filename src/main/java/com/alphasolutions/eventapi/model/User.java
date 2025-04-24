@@ -44,12 +44,11 @@ public class User {
     @Column(name = "unique_code",updatable = false,nullable = false)
     private String uniqueCode;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP(3) DEFAULT NOW()")
-    private Instant createdAt;
+    @Column(name = "avatar_seed", nullable = false)
+    private String avatarSeed;
 
-    @Column(name = "is_email_verified" ,nullable = true)
-    private Boolean isEmailVerified;
+    @Column(name = "avatar_style", nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'adventurer'")
+    private String avatarStyle;
 
     @ManyToOne
     @JoinColumn(name = "palestra_atual", referencedColumnName = "id_palestra", nullable = true, updatable = true)
@@ -75,9 +74,11 @@ public class User {
         this.email = email;
         this.redeSocial = redeSocial;
         this.uniqueCode = uniqueCode;
+        this.avatarSeed = avatarSeed;
+        this.avatarStyle = avatarStyle;
     }
 
-    public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode) {
+    public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode, String avatarSeed, String avatarStyle, String avatarUrl) {
         this.id = id;
         this.nome = username;
         this.role = role;
@@ -86,16 +87,22 @@ public class User {
         this.redeSocial = redesocial;
         this.password = password;
         this.uniqueCode = uniqueCode;
+        this.avatarSeed = avatarSeed;
+        this.avatarStyle = avatarStyle;
     }
 
     @Override
     public String toString() {
-    return "User{" +
-            "id=" + id +
-            ", nome='" + nome + '\'' +
-            ", email='" + email + '\'' +
-            ", evento=" + (evento != null ? evento.getId() : "null") +
-            '}';
-}
+        return "User{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", email='" + email + '\'' +
+                ", evento=" + (evento != null ? evento.getId() : "null") + '\'' +  
+                ", avatarSeed= " + avatarSeed + '\'' + 
+                ", avatarStyle= " + avatarStyle + '\'' +
+                ", avatarUrl= " + getAvatarUrl() + '\'' +
+                '}';
+        
+    }
 
 }

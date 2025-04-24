@@ -35,17 +35,40 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         } catch (Exception e) {
             throw new InvalidTokenException(e.getMessage());
         }
+
+        // verifica se o usuario ja existe
         User user = userRepository.findById(googlePayload.getSubject()).orElse(null);
         if (user != null) {
             return jwtUtil.generateToken(user);
         }
+
+        // Gera codigo unico
         String uniqueCode;
         do {
             uniqueCode = IdentifierGenerator.generateIdentity(6);
-        }while(userRepository.existsById(uniqueCode));
+        } while(userRepository.existsById(uniqueCode));
 
-        user = userRepository.save(new User(googlePayload.getSubject(),(String) googlePayload.get("name"),new Role(2L,"Participante"),new Evento(1L,"Primeiro Evento"),(String) googlePayload.get("email"),null,uniqueCode));
+        // Gera seed e estilo para o avatar
+        String avatarSeed = googlePayload.getSubject() + "-" + System.currentTimeMillis();
+        String avatarStyle = "adventurer"; // estilo padrao
+
+        // Cria novo usuario com todos os campos necessarios
+        user = new User(
+            googlePayload.getSubject(),                  // id
+            (String) googlePayload.get("name"),     // username
+            new Role(2L, "Participante"),        // role
+            new Evento(1L, "Primeiro Evento"),   // evento
+            (String) googlePayload.get("email"),    // email
+            null,                             // redeSocial
+            null,                             // password
+            uniqueCode,                                  // uniqueCode
+            avatarSeed,                                  // avatarSeed    
+            avatarStyle                                  // avatarStyle
+        );
+
+        userRepository.save(user);
         rankingService.inscreverUsuarioNoRanking(new Evento(1L,"Primeiro Evento"),user);
+        
         return jwtUtil.generateToken(user);
     }
 

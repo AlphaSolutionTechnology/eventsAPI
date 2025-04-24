@@ -27,7 +27,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String authenticate(String email, String password) {
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmailWithAvatar(email)
+            .orElseThrow(() -> new UserNotFoundException("Credenciais Inválidas"));
+
         if(user == null) {
             throw new UserNotFoundException("Credenciais Inválidas");
         }
@@ -35,7 +37,37 @@ public class AuthServiceImpl implements AuthService {
         if(!isValid) {
             throw new IllegalArgumentException("Credenciais Inválidas");
         }
+
+        // Garante que o usuario tem avatar
+        if (user.getAvatarSeed() == null || user.getAvatarStyle() == null) {
+            user.setAvatarSeed(email + "-" + System.currentTimeMillis());
+            user.setAvatarStyle("adventurer"); // estilo padrao
+            userRepository.save(user);
+            System.out.println("Avatar padrao definido para:" + email);
+        }
         return jwtUtil.generateToken(user);
+    }
+
+    @Override
+    public Map<String, Object> authenticateWithDetails(String token) {
+        Map<String, Object> claims = jwtUtil.extractClaim(token);
+        if (claims.get("error") != null) {
+            throw new InvalidTokenException("Token inválido");
+        }
+        
+        // Completa com dados do usuário se necessário
+        User user = userRepository.findById(claims.get("id").toString())
+            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        
+        claims.put("avatarUrl", buildAvatarUrl(user));
+        return claims;
+    }
+    
+    private String buildAvatarUrl(User user) {
+        return "https://api.dicebear.com/8.x/" + 
+               user.getAvatarStyle() + 
+               "/svg?seed=" + 
+               user.getAvatarSeed();
     }
 
     @Override

@@ -7,16 +7,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor  // Cria construtur vazio
 @AllArgsConstructor // Cria construtur com todos os campos
 @Data               // Gera getters, setter, toString, equals
-public class UserDTO {
-    private String id;
-    private String username;
+public class UserUpdateDTO {
+    private String name;
     private String email;
-    private String password;
-    private String uniqueCode;
-    private String redeSocial;
+    // Outros campos editaveis como bio, telefone, etc.
     
-    // Novos campos do avatar
-    private String avatarSeed;
-    private String avatarStyle;
-    private String avatarUrl; // URL do avatar gerada dinamicamente
 }
