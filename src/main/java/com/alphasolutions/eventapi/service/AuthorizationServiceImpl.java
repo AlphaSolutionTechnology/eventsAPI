@@ -3,13 +3,11 @@ package com.alphasolutions.eventapi.service;
 import com.alphasolutions.eventapi.exception.InvalidRoleException;
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.exception.UserNotMatchWithRequestException;
-import com.alphasolutions.eventapi.model.Role;
+import com.alphasolutions.eventapi.model.entity.Role;
 import com.alphasolutions.eventapi.repository.RoleRepository;
 import com.alphasolutions.eventapi.utils.JwtUtil;
-import com.sun.jdi.request.InvalidRequestStateException;
 import org.springframework.stereotype.Service;
 
-import javax.management.relation.InvalidRoleValueException;
 import java.util.Map;
 
 @Service

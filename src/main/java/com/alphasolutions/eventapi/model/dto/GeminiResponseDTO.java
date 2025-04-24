@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

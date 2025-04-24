@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ConexaoDTO {
-    private String userId;
-    private String name;
+public class AlphaConnectionRequest {
+    private String to;
+    private String from;
+    private String status;
 }

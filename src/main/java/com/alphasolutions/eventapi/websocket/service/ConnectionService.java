@@ -1,8 +1,8 @@
 package com.alphasolutions.eventapi.websocket.service;
 
-import com.alphasolutions.eventapi.model.Conexao;
-import com.alphasolutions.eventapi.model.User;
-import com.alphasolutions.eventapi.model.UserConnetionDTO;
+import com.alphasolutions.eventapi.model.entity.Conexao;
+import com.alphasolutions.eventapi.model.entity.User;
+import com.alphasolutions.eventapi.model.dto.UserConnetionDTO;
 import com.alphasolutions.eventapi.websocket.notification.Status;
 
 import java.util.List;

@@ -1,17 +1,15 @@
 package com.alphasolutions.eventapi.service;
 
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
-import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
-import com.alphasolutions.eventapi.model.Evento;
-import com.alphasolutions.eventapi.model.Role;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.entity.Evento;
+import com.alphasolutions.eventapi.model.entity.Role;
+import com.alphasolutions.eventapi.model.entity.User;
 import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.IdentifierGenerator;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.google.api.client.json.webtoken.JsonWebToken.Payload;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 public class GoogleAuthServiceImpl implements GoogleAuthService {

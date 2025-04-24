@@ -2,7 +2,12 @@ package com.alphasolutions.eventapi.service;
 
 import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
-import com.alphasolutions.eventapi.model.*;
+import com.alphasolutions.eventapi.model.dto.UserDTO;
+import com.alphasolutions.eventapi.model.dto.UserData;
+import com.alphasolutions.eventapi.model.entity.Evento;
+import com.alphasolutions.eventapi.model.entity.Role;
+import com.alphasolutions.eventapi.model.entity.User;
+import com.alphasolutions.eventapi.repository.EventoRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.utils.IdentifierGenerator;
@@ -11,6 +16,9 @@ import com.google.api.client.json.webtoken.JsonWebToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -21,14 +29,15 @@ public class UserServiceImpl implements UserService {
     private final PasswordUtils passwordUtils;
     private final IdentifierGenerator identifierGenerator;
     private final RankingService rankingService;
+    private final EventoRepository eventoRepository;
 
-    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, RankingService rankingService,PasswordUtils passwordUtils, IdentifierGenerator identifierGenerator) {
+    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, RankingService rankingService, PasswordUtils passwordUtils, IdentifierGenerator identifierGenerator, EventoRepository eventoRepository) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.passwordUtils = passwordUtils;
         this.rankingService = rankingService;
         this.identifierGenerator = identifierGenerator;
-
+        this.eventoRepository = eventoRepository;
     }
 
     @Override
@@ -86,6 +95,7 @@ public class UserServiceImpl implements UserService {
         }
         return passwordUtils.checkPassword(password, user.getPassword()) ? user:null;
     }
+
 
     public UserDTO prepareUserWithGoogleData(JsonWebToken.Payload googlePayload) {
         var email = googlePayload.get("email");

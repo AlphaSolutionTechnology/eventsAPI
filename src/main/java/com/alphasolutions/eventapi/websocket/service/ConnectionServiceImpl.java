@@ -4,12 +4,11 @@ import com.alphasolutions.eventapi.exception.AlreadyConnectedUsersException;
 import com.alphasolutions.eventapi.exception.SelfConnectionException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
 import com.alphasolutions.eventapi.exception.WaitingForResponseException;
-import com.alphasolutions.eventapi.model.Conexao;
-import com.alphasolutions.eventapi.model.User;
-import com.alphasolutions.eventapi.model.UserConnetionDTO;
+import com.alphasolutions.eventapi.model.entity.Conexao;
+import com.alphasolutions.eventapi.model.entity.User;
+import com.alphasolutions.eventapi.model.dto.UserConnetionDTO;
 import com.alphasolutions.eventapi.repository.ConexaoRepository;
 import com.alphasolutions.eventapi.repository.RankingRepository;
-import com.alphasolutions.eventapi.repository.RankingViewRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.websocket.notification.Status;
@@ -29,7 +28,7 @@ public class ConnectionServiceImpl implements ConnectionService {
     public ConexaoRepository conexaoRepository;
     public UserRepository userRepository;
 
-    public ConnectionServiceImpl(ConexaoRepository conexaoRepository, UserRepository userRepository, RankingRepository rankingRepository, SimpMessagingTemplate messagingTemplate, RankingViewRepository rankingViewRepository, JwtUtil jwtUtil) {
+    public ConnectionServiceImpl(ConexaoRepository conexaoRepository, UserRepository userRepository, RankingRepository rankingRepository, SimpMessagingTemplate messagingTemplate, JwtUtil jwtUtil) {
         this.conexaoRepository = conexaoRepository;
         this.userRepository = userRepository;
         this.rankingRepository = rankingRepository;
@@ -88,8 +87,8 @@ public class ConnectionServiceImpl implements ConnectionService {
         if(status.equals(Status.ACCEPTED.getStatus())) {
             conexao.setStatus(Status.ACCEPTED.getStatus());
             conexaoRepository.save(conexao);
-            rankingRepository.incrementConnection(solicitante.getId());
-            rankingRepository.incrementConnection(solicitado.getId());
+            rankingRepository.incrementConnection(solicitante.getIdUser());
+            rankingRepository.incrementConnection(solicitado.getIdUser());
             messagingTemplate.convertAndSend("/topic/ranking", Map.of("type","ranking_update"));
         }else{
             conexao.setStatus(Status.DECLINED.getStatus());

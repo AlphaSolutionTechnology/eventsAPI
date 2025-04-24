@@ -1,6 +1,6 @@
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.model.entity;
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,14 +8,18 @@ import lombok.NoArgsConstructor;
 @Table(name = "role")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_role")
-    private Long id;
+    private Long idRole;
 
     @Column(name = "role", nullable = false, length = 15)
     private String role;
 
+    public Role(long l, String participante) {
+        this.idRole = l;
+        this.role = participante;
+    }
 }

@@ -1,7 +1,11 @@
 package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.exception.*;
-import com.alphasolutions.eventapi.model.*;
+import com.alphasolutions.eventapi.model.dto.AlphaConnectionRequest;
+import com.alphasolutions.eventapi.model.dto.ConexaoDTO;
+import com.alphasolutions.eventapi.model.dto.ConnectionRequestData;
+import com.alphasolutions.eventapi.model.entity.Conexao;
+import com.alphasolutions.eventapi.model.entity.User;
 import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.AuthorizationService;
 import com.alphasolutions.eventapi.service.UserService;

@@ -1,21 +1,18 @@
 package com.alphasolutions.eventapi.service;
 
 
-import java.security.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
-import com.alphasolutions.eventapi.model.PalestraDTO;
+import com.alphasolutions.eventapi.model.dto.PalestraDTO;
 import jakarta.transaction.Transactional;
 
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import com.alphasolutions.eventapi.model.Palestra;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.entity.Palestra;
+import com.alphasolutions.eventapi.model.entity.User;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.IdentifierGenerator;
@@ -49,31 +46,31 @@ public class PalestraService {
 
 
     public void inscreverUsuarioNaPalestra(Palestra palestra, User user){
-        user.setPalestra(palestra);
+        user.setPalestraAtual(palestra);
         userRepository.save(user);
 
     }
 
     public boolean isUsuarioInscritoNaPalestra(Palestra palestra, User user){
-        Palestra palestraInUserTable = user.getPalestra();
+        Palestra palestraInUserTable = user.getPalestraAtual();
         if(palestraInUserTable == null){
             return false;
         }
         if(palestra == null){
             throw new PalestraNotFoundException("Palestra nao encontrada");
         }
-        return palestra.getId().equals(palestraInUserTable.getId());
+        return palestra.getIdPalestra().equals(palestraInUserTable.getIdPalestra());
     }
 
     public void desinscreverUsuarioDaPalestra(User user) {
-        user.setPalestra(null);
+        user.setPalestraAtual(null);
         userRepository.save(user);
     }
 
     @Transactional
     public void deletePalestra(Long id) {
         if(palestraRepository.existsById(id)) {
-            palestraRepository.removePalestraById(id);
+            palestraRepository.removePalestraByIdPalestra(id);
             return;
         }
         throw new PalestraNotFoundException("No such palestra");
@@ -96,15 +93,30 @@ public class PalestraService {
         return palestra;
     }
 
-    public List<Palestra> findAllPalestras() {
-        return palestraRepository.findAll();
+    public List<PalestraDTO> findAllPalestras() {
+        List<PalestraDTO> palestraList = new ArrayList<>();
+
+        for(Palestra palestra : palestraRepository.findAll()) {
+            palestraList.add(new
+                    PalestraDTO(
+                        palestra.getIdPalestra(),
+                        palestra.getTema(),
+                        palestra.getPalestrante(),
+                        palestra.getHoraLiberacao(),
+                        palestra.getQuizzLiberado(),
+                        palestra.getUniqueCode(),
+                        palestra.getDescricao()
+                    )
+            );
+        }
+        return palestraList;
     }
 
     public List<PalestraDTO> findAllUserPalestra(User user) {
         List<Palestra> palestras =  palestraRepository.findAllByUser(user);
         List<PalestraDTO> palestrasDTO = new ArrayList<>(palestras.size());
         for (Palestra palestra : palestras) {
-            palestrasDTO.add(new PalestraDTO(palestra.getId(), palestra.getTema(), palestra.getEvento(), palestra.getUniqueCode()));
+            palestrasDTO.add(new PalestraDTO(palestra.getIdPalestra(), palestra.getTema(), palestra.getPalestrante(),palestra.getHoraLiberacao(),palestra.getQuizzLiberado(), palestra.getUniqueCode(),palestra.getDescricao()));
         }
         return palestrasDTO;
     }
@@ -112,7 +124,7 @@ public class PalestraService {
     @Transactional
     public void unsubscribeAllUsersFromPalestra(Long id) {
         if (palestraRepository.existsById(id)) {
-            userRepository.unsubscribeUsersFromPalestra(id);
+            userRepository.unsubscribeUsersFromPalestraAtual(id);
         }
     }
 
