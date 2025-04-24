@@ -1,3 +1,4 @@
+
 package com.alphasolutions.eventapi.service;
 
 import com.alphasolutions.eventapi.model.Questoes;
@@ -7,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.rmi.NoSuchObjectException;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 @Service
 public class QuestoesService {
@@ -23,7 +24,12 @@ public class QuestoesService {
     }
 
     public Questoes findById(Long id) {
-        return questoesRepository.findById(id).orElse(null);
+        Questoes questoes =  questoesRepository.findById(id).orElse(null);
+
+        if (questoes == null) {
+            throw new NoSuchElementException("Não encontrado");
+        }
+        return questoes;
     }
 
     public Questoes save(Questoes questoes) {
@@ -33,26 +39,27 @@ public class QuestoesService {
     public void deleteById(Long id) throws Exception {
         if (questoesRepository.existsById(id)) {
             questoesRepository.deleteById(id);
-        }else{
+        } else {
             throw new NoSuchObjectException("Questions not found");
         }
-
     }
 
-    public void updateQuestoes(QuestoesDTO questoes) throws Exception {
-        Questoes questao = questoesRepository.findById(questoes.getIdQuestao()).orElse(null);
-        if(questao == null) {
+    public void updateQuestoes(QuestoesDTO questoesDTO) throws Exception {
+        Questoes questao = questoesRepository.findById(questoesDTO.getIdQuestao()).orElse(null);
+        if (questao == null) {
             throw new NoSuchObjectException("Questão não encontrada");
         }
-
-        Questoes newQuestion = new Questoes(questoes.getIdQuestao(),questoes.getEnunciado(),questoes.getChoices(),questoes.getCorrectAnswer(),questoes.getIdPalestra());
+        Questoes newQuestion = new Questoes(
+                questoesDTO.getIdQuestao(),
+                questoesDTO.getEnunciado(),
+                questoesDTO.getChoices(),
+                questoesDTO.getCorrectAnswer(),
+                questoesDTO.getIdPalestra()
+        );
         questoesRepository.save(newQuestion);
-
     }
 
     public List<Questoes> findQuestoesByPalestra(Long idPalestra) {
-       return questoesRepository.findByIdPalestra(idPalestra);
-}
-
-    
+        return questoesRepository.findByIdPalestra(idPalestra);
+    }
 }

@@ -28,9 +28,6 @@ public class RankingView {
     @Column(name = "id_evento")
     private Long eventoId;
 
-    @Column(name = "id_palestra")
-    private Long palestraId;
-
     @Column(name = "colocacao")
     private Integer colocacao;
 

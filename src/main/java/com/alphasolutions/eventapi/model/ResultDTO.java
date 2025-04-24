@@ -1,15 +1,16 @@
+
 package com.alphasolutions.eventapi.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResultDTO {
-    int correctAnswerCount;
-    int wrongAnswerCount;
-    int score;
-    Double totalTime;
+    private int correctAnswerCount;
+    private int wrongAnswerCount;
+    private int score;
+    private Double totalTime;
 }

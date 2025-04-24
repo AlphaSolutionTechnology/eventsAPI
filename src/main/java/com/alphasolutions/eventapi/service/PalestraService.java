@@ -1,12 +1,18 @@
 package com.alphasolutions.eventapi.service;
 
 
+import java.security.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
 import com.alphasolutions.eventapi.model.PalestraDTO;
 import jakarta.transaction.Transactional;
+
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.alphasolutions.eventapi.model.Palestra;
 import com.alphasolutions.eventapi.model.User;
@@ -17,7 +23,7 @@ import com.alphasolutions.eventapi.utils.IdentifierGenerator;
 @Service
 public class PalestraService {
     
-
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final PalestraRepository palestraRepository;
     private final RankingService rankingService;
     private final UserRepository userRepository;
@@ -90,6 +96,10 @@ public class PalestraService {
         return palestra;
     }
 
+    public List<Palestra> findAllPalestras() {
+        return palestraRepository.findAll();
+    }
+
     public List<PalestraDTO> findAllUserPalestra(User user) {
         List<Palestra> palestras =  palestraRepository.findAllByUser(user);
         List<PalestraDTO> palestrasDTO = new ArrayList<>(palestras.size());
@@ -105,4 +115,12 @@ public class PalestraService {
             userRepository.unsubscribeUsersFromPalestra(id);
         }
     }
-}
+
+    
+    }
+
+
+
+
+
+
