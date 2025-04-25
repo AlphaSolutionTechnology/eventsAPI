@@ -2,9 +2,13 @@ package com.alphasolutions.eventapi.service;
 
 import java.sql.Date;
 
+import org.springframework.stereotype.Service;
+
 import com.alphasolutions.eventapi.model.Evento;
 import com.alphasolutions.eventapi.repository.EventoRepository;
 
+
+@Service
 public class EventoService {
 
     private final EventoRepository eventoRepository;
