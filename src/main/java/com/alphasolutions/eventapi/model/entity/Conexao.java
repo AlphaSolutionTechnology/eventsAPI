@@ -1,6 +1,7 @@
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "conexao")

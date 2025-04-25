@@ -1,8 +1,7 @@
 package com.alphasolutions.eventapi.utils;
 
 
-import com.alphasolutions.eventapi.model.User;
-import com.alphasolutions.eventapi.repository.UserRepository;
+import com.alphasolutions.eventapi.model.entity.User;
 import com.google.auth.oauth2.TokenVerifier;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -34,7 +33,7 @@ public class JwtUtil {
         claims.put("unique_code",user.getUniqueCode());
 
         return Jwts.builder()
-                .subject(user.getId())
+                .subject(user.getIdUser())
                 .issuedAt(new Date())
                 .claims(claims)
                 .expiration(new Date(System.currentTimeMillis() + 3600 * 1000 * 24 * 7))

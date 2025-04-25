@@ -3,7 +3,7 @@ package com.alphasolutions.eventapi.service;
 import com.alphasolutions.eventapi.exception.InvalidRoleException;
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.entity.User;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import com.alphasolutions.eventapi.utils.PasswordUtils;

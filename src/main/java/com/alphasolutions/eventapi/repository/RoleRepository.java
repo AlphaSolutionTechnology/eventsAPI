@@ -1,6 +1,6 @@
 package com.alphasolutions.eventapi.repository;
 
-import com.alphasolutions.eventapi.model.Role;
+import com.alphasolutions.eventapi.model.entity.Role;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

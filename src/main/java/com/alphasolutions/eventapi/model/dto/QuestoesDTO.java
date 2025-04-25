@@ -1,5 +1,5 @@
 // File: QuestoesDTO.java
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

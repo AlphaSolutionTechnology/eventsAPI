@@ -3,10 +3,11 @@ package com.alphasolutions.eventapi.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.alphasolutions.eventapi.model.entity.Evento;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.alphasolutions.eventapi.model.Palestra;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.entity.Palestra;
+import com.alphasolutions.eventapi.model.entity.User;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,22 +15,22 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, String> {
     User findByUniqueCode(String uniqueCode);
 
-    Optional<User> findById(String id);
+    Optional<User> findByIdUser(String idUser);
 
     boolean existsByUniqueCode(String uniqueCode);
 
     boolean existsByEmail(String email);
 
-    boolean existsByPalestra (Optional<Palestra> palestra);
-
     Optional<User> findByEmail(String email);
 
     @Modifying
-    @Query("UPDATE User u SET u.palestra = NULL WHERE u.palestra.id = :palestraId")
-    void unsubscribeUsersFromPalestra(@Param("palestraId") Long palestraId);
+    @Query("UPDATE User u SET u.palestraAtual = NULL WHERE u.palestraAtual.idPalestra = :palestraId")
+    void unsubscribeUsersFromPalestraAtual(@Param("palestraId") Long palestraId);
 
 
-    List<User> findByPalestra(Palestra palestra);
+    List<User> findByPalestraAtual(Palestra palestraAtual);
 
-    List<User> findAllByPalestra(Palestra palestra);
+    List<User> findAllByPalestraAtual(Palestra palestraAtual);
+
+    List<User> findAllByEvento(Evento evento);
 }

@@ -1,17 +1,15 @@
 package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.exception.*;
-import com.alphasolutions.eventapi.model.Palestra;
-import com.alphasolutions.eventapi.model.PalestraDTO;
-import com.alphasolutions.eventapi.model.PalestraIdsDTO;
-import com.alphasolutions.eventapi.model.QuizzStatusResponse;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.entity.Palestra;
+import com.alphasolutions.eventapi.model.dto.PalestraDTO;
+import com.alphasolutions.eventapi.model.dto.QuizzStatusResponse;
+import com.alphasolutions.eventapi.model.entity.User;
 import com.alphasolutions.eventapi.repository.PalestraRepository;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.PalestraService;
 import com.alphasolutions.eventapi.service.QuizzSchedulerService;
-import com.alphasolutions.eventapi.service.RankingService;
 import com.alphasolutions.eventapi.service.UserService;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import org.springframework.http.HttpStatus;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 
@@ -65,7 +64,7 @@ public class PalestraController {
 
             return ResponseEntity.ok(Map.of(
                     "message", "Verificação concluída com sucesso.",
-                    "idPalestra", palestra.getId(),
+                    "idPalestra", palestra.getIdPalestra(),
                     "inscrito", isInscrito
             ));
 
@@ -94,7 +93,7 @@ public class PalestraController {
     public ResponseEntity<?> listarLectures(@CookieValue(value = "eventToken") String eventToken) {
         try {
             authService.authenticate(eventToken);
-            List<Palestra> palestras = palestraService.findAllPalestras();
+            List<PalestraDTO> palestras = palestraService.findAllPalestras();
             return ResponseEntity.ok(palestras);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");
@@ -119,13 +118,12 @@ public class PalestraController {
     }
 
     @DeleteMapping("/excluir")
-    public ResponseEntity<?> excluirPalestras(@CookieValue("eventToken") String eventToken,@RequestBody PalestraIdsDTO dto) {
+    public ResponseEntity<?> excluirPalestras(@CookieValue("eventToken") String eventToken) {
 
         try {
-            Long id = Long.parseLong(dto.getId());
             authService.authenticateAdmin(eventToken);
-            palestraService.unsubscribeAllUsersFromPalestra(id);
-            palestraService.deletePalestra(id);
+            palestraService.unsubscribeAllUsersFromPalestra(1L);
+            palestraService.deletePalestra(1L);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (PalestraNotFoundException palestraNotFoundException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(palestraNotFoundException.getMessage());
@@ -151,7 +149,7 @@ public class PalestraController {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
             palestraService.inscreverUsuarioNaPalestra(palestra,user);
-            return ResponseEntity.ok(Map.of("message", "sucesso","idPalestra", palestra.getId()));
+            return ResponseEntity.ok(Map.of("message", "sucesso","idPalestra", palestra.getIdPalestra()));
         } catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage());
         } catch (PalestraNotFoundException|UserNotFoundException notFoundException) {
@@ -170,10 +168,10 @@ public class PalestraController {
             User user = userService.getUserByToken(eventToken);
             Palestra palestra = palestraService.findPalestra(uniqueCode.trim());
             if(palestraService.isUsuarioInscritoNaPalestra(palestra, user)){
-                return ResponseEntity.ok(Map.of("message", "Usuário já inscrito", "idPalestra", palestra.getId()));
+                return ResponseEntity.ok(Map.of("message", "Usuário já inscrito", "idPalestra", palestra.getIdPalestra()));
             }
             palestraService.inscreverUsuarioNaPalestra(palestra, user);
-            return ResponseEntity.ok(Map.of("message", "Usuário inscrito com sucesso!", "idPalestra", palestra.getId()));
+            return ResponseEntity.ok(Map.of("message", "Usuário inscrito com sucesso!", "idPalestra", palestra.getIdPalestra()));
         } catch (InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (PalestraNotFoundException | UserNotFoundException e) {
@@ -243,7 +241,7 @@ public class PalestraController {
             authService.authenticate(eventToken);
             
             Palestra palestra = palestraService.findPalestraById(idPalestra);
-            Timestamp horaLiberacao = palestra.getHoraLiberacao();
+            OffsetDateTime horaLiberacao = palestra.getHoraLiberacao();
             boolean isQuizzReleased = palestra.getQuizzLiberado();
     
             if(isQuizzReleased){

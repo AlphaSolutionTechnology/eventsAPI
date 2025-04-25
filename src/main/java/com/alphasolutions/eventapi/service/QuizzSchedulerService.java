@@ -75,7 +75,7 @@ public class QuizzSchedulerService {
         var palestras = palestraRepository.findAllByQuizzLiberadoFalse();
         for (var palestra : palestras) {
             if(palestra.getHoraLiberacao() != null){
-                agendarLiberacaoQuizz(palestra.getId(), palestra.getHoraLiberacao());
+                System.out.println("palestra " + palestra.getHoraLiberacao());
             }
         }
     }

@@ -1,12 +1,11 @@
 package com.alphasolutions.eventapi.repository;
 
-import com.alphasolutions.eventapi.model.Palestra;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.entity.Palestra;
+import com.alphasolutions.eventapi.model.entity.User;
 
 import jakarta.transaction.Transactional;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Repository;
 public interface PalestraRepository extends JpaRepository<Palestra, Long> {
     boolean existsByUniqueCode(String uniqueCode);
     Optional<Palestra> findByUniqueCode(String uniqueCode);
-    void removePalestraById(Long id);
+    void removePalestraByIdPalestra(Long id);
     List<Palestra> findAllByUser(User user);
     List<Palestra> findAllByQuizzLiberadoFalse();
 

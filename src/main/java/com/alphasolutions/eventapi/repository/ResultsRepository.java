@@ -1,8 +1,8 @@
 package com.alphasolutions.eventapi.repository;
 
-import com.alphasolutions.eventapi.model.Palestra;
-import com.alphasolutions.eventapi.model.Results;
-import com.alphasolutions.eventapi.model.User;
+import com.alphasolutions.eventapi.model.entity.Palestra;
+import com.alphasolutions.eventapi.model.entity.Results;
+import com.alphasolutions.eventapi.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

@@ -1,10 +1,8 @@
 package com.alphasolutions.eventapi.controller;
 
-import com.alphasolutions.eventapi.model.Ranking;
-import com.alphasolutions.eventapi.model.RankingView;
+import com.alphasolutions.eventapi.model.entity.RankingView;
 import com.alphasolutions.eventapi.service.RankingService;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

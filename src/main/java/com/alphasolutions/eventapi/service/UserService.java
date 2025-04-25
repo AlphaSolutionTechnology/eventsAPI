@@ -1,7 +1,7 @@
 package com.alphasolutions.eventapi.service;
 
-import com.alphasolutions.eventapi.model.User;
-import com.alphasolutions.eventapi.model.UserDTO;
+import com.alphasolutions.eventapi.model.entity.User;
+import com.alphasolutions.eventapi.model.dto.UserDTO;
 
 public interface UserService {
 
