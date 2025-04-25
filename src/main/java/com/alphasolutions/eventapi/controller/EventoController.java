@@ -1,9 +1,12 @@
 package com.alphasolutions.eventapi.controller;
 
+import com.alphasolutions.eventapi.exception.AlreadySubscribedInThisEventException;
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
+import com.alphasolutions.eventapi.model.dto.EventSubscriptionPojo;
 import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.EventService;
 import com.alphasolutions.eventapi.service.UserService;
+import com.google.common.eventbus.Subscribe;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +24,22 @@ public class EventoController {
         this.authService = authService;
         this.eventService = eventService;
         this.userService = userService;
+    }
+
+    @PatchMapping("/subscribe")
+    public ResponseEntity<?> subscribe(@CookieValue("eventToken") String eventToken ,@RequestBody EventSubscriptionPojo eventSubscriptionForm) throws InvalidTokenException {
+        try {
+            authService.authenticate(eventToken);
+            eventService.subscribe(eventSubscriptionForm);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }catch (InvalidTokenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }catch (AlreadySubscribedInThisEventException alreadySubscribedInThisEventException) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(alreadySubscribedInThisEventException.getMessage());
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
     }
 
     @GetMapping("/event-list")

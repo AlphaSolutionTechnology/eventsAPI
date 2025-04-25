@@ -1,5 +1,8 @@
 package com.alphasolutions.eventapi.service;
 
+import com.alphasolutions.eventapi.exception.AlreadySubscribedInThisEventException;
+import com.alphasolutions.eventapi.exception.UserNotFoundException;
+import com.alphasolutions.eventapi.model.dto.EventSubscriptionPojo;
 import com.alphasolutions.eventapi.model.dto.UserData;
 import com.alphasolutions.eventapi.model.entity.Evento;
 import com.alphasolutions.eventapi.model.entity.User;
@@ -40,8 +43,27 @@ public class EventServiceImpl implements EventService {
 
         List<UserData> listOfUserData = new ArrayList<>();
         for(User user : userRepository.findAllByEvento(evento)) {
-            listOfUserData.add(new UserData(user.getNome(), user.getEmail(), user.getRole().getRole(),user.getUniqueCode(),user.getAvatar().getAvatarSeed()));
+            listOfUserData.add(new UserData(user.getIdUser(),user.getNome(), user.getEmail(), user.getRole().getRole(),user.getUniqueCode()));
         }
+        System.out.println(listOfUserData);
         return listOfUserData;
+    }
+
+    @Override
+    public void subscribe(EventSubscriptionPojo eventSubscriptionForm) {
+        Long eventId = eventSubscriptionForm.getEventId();
+        String userId = eventSubscriptionForm.getUserId();
+        Evento evento = eventoRepository.findByIdEvento(eventId);
+        User actualUser = userRepository.findById(userId).orElse(null);
+        if (eventId == null || eventId == 0 || evento == null) {
+            throw new RuntimeException("Event not found");
+        }if (userId.isEmpty() || actualUser == null) {
+            throw new UserNotFoundException("User not found");
+        }if (actualUser.getEvento() != null && actualUser.getEvento().equals(evento) ) {
+            throw new AlreadySubscribedInThisEventException("User is already subscribed to this event");
+        }
+
+        actualUser.setEvento(evento);
+        userRepository.save(actualUser);
     }
 }
