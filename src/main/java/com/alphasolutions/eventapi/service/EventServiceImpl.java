@@ -43,7 +43,9 @@ public class EventServiceImpl implements EventService {
 
         List<UserData> listOfUserData = new ArrayList<>();
         for(User user : userRepository.findAllByEvento(evento)) {
-            listOfUserData.add(new UserData(user.getIdUser(),user.getNome(), user.getEmail(), user.getRole().getRole(),user.getUniqueCode()));
+            if(!user.getRole().getRole().equals("Administrador")) {
+                listOfUserData.add(new UserData(user.getIdUser(),user.getNome(), user.getEmail(), user.getRole().getRole(),user.getUniqueCode()));
+            }
         }
         System.out.println(listOfUserData);
         return listOfUserData;

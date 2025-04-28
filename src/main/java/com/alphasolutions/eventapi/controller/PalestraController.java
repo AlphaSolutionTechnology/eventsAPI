@@ -105,7 +105,7 @@ public class PalestraController {
     @PostMapping("/criar")
     public ResponseEntity<?> criarPalestra(
             @CookieValue(value = "eventToken") String eventToken,
-            @RequestBody Palestra palestra) {
+            @RequestBody PalestraDTO palestra) {
 
         try{
             authService.authenticateAdmin(eventToken);
@@ -114,7 +114,7 @@ public class PalestraController {
         } catch (InvalidRoleException | InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Algo deu errado..");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
     }
@@ -243,7 +243,7 @@ public class PalestraController {
             authService.authenticate(eventToken);
             
             Palestra palestra = palestraService.findPalestraById(idPalestra);
-            OffsetDateTime horaLiberacao = palestra.getHoraLiberacao();
+            Timestamp horaLiberacao = palestra.getHoraLiberacao();
             boolean isQuizzReleased = palestra.getQuizzLiberado();
     
             if(isQuizzReleased){

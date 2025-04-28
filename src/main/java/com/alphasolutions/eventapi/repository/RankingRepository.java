@@ -32,5 +32,4 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
 
     Ranking findRankingByUser(User user);
 
-    List<RankingView> findAllByEvento(Evento evento);
 }

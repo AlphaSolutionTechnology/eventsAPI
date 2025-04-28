@@ -8,6 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import com.alphasolutions.eventapi.exception.PalestraNotFoundException;
 import com.alphasolutions.eventapi.model.dto.PalestraDTO;
+import com.alphasolutions.eventapi.repository.EventoRepository;
 import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
@@ -25,15 +26,27 @@ public class PalestraService {
     private final RankingService rankingService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final EventoRepository eventoRepository;
+    private final EventService eventService;
 
-    public PalestraService(PalestraRepository palestraRepository, RankingService rankingService, UserRepository userRepository, UserService userService){
+    public PalestraService(PalestraRepository palestraRepository, RankingService rankingService, UserRepository userRepository, UserService userService, EventoRepository eventoRepository, EventService eventService){
         this.palestraRepository = palestraRepository;
         this.rankingService = rankingService;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.eventoRepository = eventoRepository;
+        this.eventService = eventService;
     }
 
-     public Palestra criarPalestra(Palestra palestra, String eventToken) {
+     public Palestra criarPalestra(PalestraDTO palestraDTO, String eventToken) {
+        Palestra palestra = new Palestra();
+        palestra.setTema(palestraDTO.getTitle());
+        palestra.setUser(userService.getUserByToken(eventToken));
+        palestra.setHoraLiberacao(palestraDTO.getTime());
+        palestra.setPalestrante(palestraDTO.getSpeaker());
+        palestra.setDescricao(palestraDTO.getDescription());
+        palestra.setQuizzLiberado(false);
+        palestra.setEvento(eventoRepository.findByIdEvento(1L));
         String uniqueCode;
         User user = userService.getUserByToken(eventToken);
         do {
@@ -47,6 +60,7 @@ public class PalestraService {
 
     public void inscreverUsuarioNaPalestra(Palestra palestra, User user){
         user.setPalestraAtual(palestra);
+        rankingService.inscreverUsuarioNoRanking(palestra, user);
         userRepository.save(user);
 
     }

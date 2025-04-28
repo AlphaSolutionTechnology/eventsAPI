@@ -32,12 +32,9 @@ public class Ranking {
     @Column(name = "acertos", nullable = false)
     private Integer acertos = 0;
 
-    @ManyToOne
-    @JoinColumn(name = "id_evento")
-    private Evento evento;
 
-    public Ranking(Evento evento, User user) {
-        this.evento = evento;
+    public Ranking(Palestra palestra, User user) {
+        this.palestra = palestra;
         this.user = user;
     }
 

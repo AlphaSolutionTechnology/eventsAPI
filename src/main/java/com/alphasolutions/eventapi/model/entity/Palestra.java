@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -37,7 +38,7 @@ public class Palestra {
     private Boolean quizzLiberado = false;
 
     @Column(name = "hora_liberacao")
-    private OffsetDateTime horaLiberacao;
+    private Timestamp horaLiberacao;
 
     @Column(name = "descricao", length = 255)
     private String descricao;
