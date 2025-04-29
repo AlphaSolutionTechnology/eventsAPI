@@ -14,4 +14,5 @@ public class UserDTO {
     private String password;
     private String uniqueCode;
     private String redesocial;
+    private String avatar;
 }

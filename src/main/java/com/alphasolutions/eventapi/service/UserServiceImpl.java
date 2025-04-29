@@ -43,26 +43,46 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createUser(UserDTO userDTO) {
+
         if(isEmailAlreadyExists(userDTO.getEmail())){
             throw new UserAlreadyExistsException("Já existe uma conta criada com este email!");
         }
+
         if(userDTO.getId() == null) {
             String id;
             String uniqueCode;
+
             do {
                 id = IdentifierGenerator.generateIdentity(21);
-            }while(userRepository.existsById(id));
+            } while(userRepository.existsById(id));
             do {
                 uniqueCode = identifierGenerator.generateUniqueCode();
-            }while (userRepository.existsByUniqueCode(uniqueCode));
+            } while (userRepository.existsByUniqueCode(uniqueCode));
+
             userDTO.setId(id);
             userDTO.setUniqueCode(uniqueCode);
             userDTO.setPassword(passwordUtils.hashPassword(userDTO.getPassword()));
         }
+
         User userInDatabase = userRepository.findById(userDTO.getId()).orElse(null);
+
         if(userInDatabase == null) {
+            // Gerando a URL do avatar usando o ID do usuario
+            String avatarUrl = "https://api.dicebear.com/8.x/adventurers/svg?seed=" + userDTO.getId();
+
             Role role = new Role(2L,"Participante");
-            User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,null,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
+
+            User userWithPassword = new User(
+                userDTO.getId(),
+                userDTO.getUsername(),
+                role,
+                null,
+                userDTO.getEmail(),
+                userDTO.getRedesocial(),
+                userDTO.getPassword(),
+                userDTO.getUniqueCode());
+                userDTO.setAvatar(avatarUrl);
+
             userRepository.save(userWithPassword);
         }
     }
@@ -99,10 +119,22 @@ public class UserServiceImpl implements UserService {
         var email = googlePayload.get("email");
         var name = googlePayload.get("name");
         String uniqueCode;
+
         do {
             uniqueCode = identifierGenerator.generateUniqueCode();
-        }while (userRepository.existsByUniqueCode(uniqueCode));
-        return new UserDTO(googlePayload.getSubject(), (String) name, (String) email,null, uniqueCode ,null);
+        } while (userRepository.existsByUniqueCode(uniqueCode));
+
+        String avatarUrl = "https://api.dicebear.com/8.x/adventurers/svg?seed=" + googlePayload.getSubject();
+
+        return new UserDTO(
+            googlePayload.getSubject(),
+            (String) name,
+            (String) email,
+            null,
+            uniqueCode,
+            null,
+            avatarUrl
+        );
 
     }
 }

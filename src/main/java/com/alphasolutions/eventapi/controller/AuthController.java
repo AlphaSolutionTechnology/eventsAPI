@@ -40,8 +40,10 @@ public class AuthController {
         try {
             String eventToken = authService.authenticate(userDTO.getEmail(), userDTO.getPassword());
             ResponseCookie cookie = cookieService.createCookie(eventToken);
+
             response.setHeader("Set-Cookie", cookie.toString());
             return ResponseEntity.ok().body(Map.of("data",jwtUtil.extractClaim(eventToken)));
+
         }catch (UserNotFoundException userNotFoundException) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", userNotFoundException.getMessage()));
         }catch (IllegalArgumentException e) {
@@ -67,9 +69,12 @@ public class AuthController {
                 authService.authenticate(existingToken);
                 return ResponseEntity.ok().body(Map.of("data",jwtUtil.extractClaim(existingToken)));
             }
+
             String eventToken = googleAuthService.createAccountWithGoogle(body.get("token"));
             response.setHeader("Set-Cookie", cookieService.createCookie(eventToken).toString());
+
             return ResponseEntity.ok().body(jwtUtil.extractClaim(eventToken));
+            
         } catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage() + "invalid token");
         } catch (Exception e){
