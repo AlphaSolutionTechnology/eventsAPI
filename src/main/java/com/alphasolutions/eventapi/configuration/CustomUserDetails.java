@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.configuration;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

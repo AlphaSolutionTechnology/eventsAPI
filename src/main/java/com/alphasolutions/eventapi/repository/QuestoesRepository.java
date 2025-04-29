@@ -1,6 +1,6 @@
 package com.alphasolutions.eventapi.repository;
 
-import com.alphasolutions.eventapi.model.Questoes;
+import com.alphasolutions.eventapi.model.entity.Questoes;
 
 import java.util.List;
 import java.util.Optional;

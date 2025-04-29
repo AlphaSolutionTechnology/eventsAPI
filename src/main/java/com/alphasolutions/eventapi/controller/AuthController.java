@@ -3,7 +3,7 @@ package com.alphasolutions.eventapi.controller;
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
 import com.alphasolutions.eventapi.exception.UserAlreadyExistsException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
-import com.alphasolutions.eventapi.model.UserDTO;
+import com.alphasolutions.eventapi.model.dto.UserDTO;
 import com.alphasolutions.eventapi.service.*;
 import com.alphasolutions.eventapi.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;

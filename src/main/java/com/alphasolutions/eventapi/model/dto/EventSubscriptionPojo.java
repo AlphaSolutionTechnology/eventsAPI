@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserConnetionDTO {
-    private String name;
-    private String uniqueCode;
+public class EventSubscriptionPojo {
+    private Long eventId;
+    private String userId;
 }

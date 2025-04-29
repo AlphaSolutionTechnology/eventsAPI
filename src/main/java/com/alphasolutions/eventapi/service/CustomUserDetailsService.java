@@ -1,6 +1,6 @@
 package com.alphasolutions.eventapi.service;
 
-import com.alphasolutions.eventapi.model.CustomUserDetails;
+import com.alphasolutions.eventapi.configuration.CustomUserDetails;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

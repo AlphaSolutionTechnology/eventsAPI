@@ -1,4 +1,4 @@
-package com.alphasolutions.eventapi.model;
+package com.alphasolutions.eventapi.model.dto;
 
 
 public class QuizzStatusResponse {

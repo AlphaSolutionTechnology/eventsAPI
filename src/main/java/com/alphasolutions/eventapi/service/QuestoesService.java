@@ -1,8 +1,8 @@
 
 package com.alphasolutions.eventapi.service;
 
-import com.alphasolutions.eventapi.model.Questoes;
-import com.alphasolutions.eventapi.model.QuestoesDTO;
+import com.alphasolutions.eventapi.model.entity.Questoes;
+import com.alphasolutions.eventapi.model.dto.QuestoesDTO;
 import com.alphasolutions.eventapi.repository.QuestoesRepository;
 import org.springframework.stereotype.Service;
 

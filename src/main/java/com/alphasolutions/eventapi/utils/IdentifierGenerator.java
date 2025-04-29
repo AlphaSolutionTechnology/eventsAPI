@@ -1,6 +1,5 @@
 package com.alphasolutions.eventapi.utils;
 
-import com.alphasolutions.eventapi.model.User;
 import com.alphasolutions.eventapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
 

@@ -1,12 +1,10 @@
 package com.alphasolutions.eventapi.service;
 
-import com.alphasolutions.eventapi.model.Evento;
-import com.alphasolutions.eventapi.model.Ranking;
-import com.alphasolutions.eventapi.model.RankingView;
+import com.alphasolutions.eventapi.model.entity.*;
+import com.alphasolutions.eventapi.repository.EventoRepository;
 import com.alphasolutions.eventapi.repository.RankingRepository;
 import com.alphasolutions.eventapi.repository.RankingViewRepository;
 import org.springframework.stereotype.Service;
-import com.alphasolutions.eventapi.model.User;
 
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class RankingService {
     }
 
     public List<RankingView> getAllUserInRanking() {
-        return rankingViewRepository.findAllByEventoId(1L);
+        return rankingViewRepository.findByIdEvento(1L);
     }
 
     //  public void inscreverUsuarioNoRanking(Palestra palestra, User user) {
@@ -31,9 +29,9 @@ public class RankingService {
     //     }
     // }
 
-     public void inscreverUsuarioNoRanking(Evento evento, User user) {
+     public void inscreverUsuarioNoRanking(Palestra palestra, User user) {
          if (!rankingRepository.existsByUser(user)) {
-             Ranking novoRanking = new Ranking(evento, user);
+             Ranking novoRanking = new Ranking(palestra, user);
              rankingRepository.save(novoRanking);
          }
      }
