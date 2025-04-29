@@ -54,7 +54,7 @@ public class User {
     @Column(name = "avatar_seed")
     private String avatar;
 
-    @Column(name = "bio", length = 255, nullable = false)
+    @Column(name = "bio")
     private String bio;
 
     @Column(name = "avatar_url")
@@ -63,7 +63,7 @@ public class User {
     @Column(name = "avatar_style")
     private String avatarStyle;
 
-    public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode, String avatarUrl, String avatarStyle) {
+    public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode) {
         this.idUser = id;
         this.nome = nome;
         this.role = role;
@@ -71,9 +71,6 @@ public class User {
         this.email = email;
         this.redesocial = redeSocial;
         this.uniqueCode = uniqueCode;
-        this.avatarUrl = avatarUrl;
-        this.avatarStyle = avatarStyle;
-
     }
 
     public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode) {

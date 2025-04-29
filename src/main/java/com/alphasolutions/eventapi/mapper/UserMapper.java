@@ -15,7 +15,7 @@ public interface UserMapper {
         dto.setIdUser(user.getIdUser());
         dto.setName(user.getNome());
         dto.setAvatar(user.getAvatarUrl());
-        dto.setBio(user.getBio());
+        //dto.setBio(user.getBio());
 
         return dto;
     }

@@ -43,12 +43,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createUser(UserDTO userDTO) {
-
         if(isEmailAlreadyExists(userDTO.getEmail())){
             throw new UserAlreadyExistsException("Já existe uma conta criada com este email!");
         }
-
         if(userDTO.getId() == null) {
+
             String id;
             String uniqueCode;
 
@@ -67,21 +66,8 @@ public class UserServiceImpl implements UserService {
         User userInDatabase = userRepository.findById(userDTO.getId()).orElse(null);
 
         if(userInDatabase == null) {
-            // Gerando a URL do avatar usando o ID do usuario
-            String avatarUrl = "https://api.dicebear.com/8.x/adventurers/svg?seed=" + userDTO.getId();
-
             Role role = new Role(2L,"Participante");
-
-            User userWithPassword = new User(
-                userDTO.getId(),
-                userDTO.getUsername(),
-                role,
-                null,
-                userDTO.getEmail(),
-                userDTO.getRedesocial(),
-                userDTO.getPassword(),
-                userDTO.getUniqueCode());
-                userDTO.setAvatar(avatarUrl);
+            User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,null,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
 
             userRepository.save(userWithPassword);
         }
@@ -94,8 +80,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByToken(String eventToken) {
+
         Map<String, Object> tokenData = jwtUtil.extractClaim(eventToken);
         User user = userRepository.findById(tokenData.get("id").toString()).orElse(null);
+
         if(user != null) {
             return user;
         }
@@ -107,7 +95,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User checkEmailAndPasswordValidityAndReturnUser(String email, String password) {
+
         User user = userRepository.findByEmail(email).orElse(null);
+
         if(user == null) {
             throw new UserNotFoundException("Usuário não encontrado!");
         }
@@ -124,16 +114,14 @@ public class UserServiceImpl implements UserService {
             uniqueCode = identifierGenerator.generateUniqueCode();
         } while (userRepository.existsByUniqueCode(uniqueCode));
 
-        String avatarUrl = "https://api.dicebear.com/8.x/adventurers/svg?seed=" + googlePayload.getSubject();
-
         return new UserDTO(
             googlePayload.getSubject(),
             (String) name,
             (String) email,
             null,
             uniqueCode,
-            null,
-            avatarUrl
+            null
+            
         );
 
     }

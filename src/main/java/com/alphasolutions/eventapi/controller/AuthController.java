@@ -42,6 +42,7 @@ public class AuthController {
             ResponseCookie cookie = cookieService.createCookie(eventToken);
 
             response.setHeader("Set-Cookie", cookie.toString());
+            
             return ResponseEntity.ok().body(Map.of("data",jwtUtil.extractClaim(eventToken)));
 
         }catch (UserNotFoundException userNotFoundException) {
@@ -57,6 +58,7 @@ public class AuthController {
         try {
            userService.createUser(userDTO);
            return ResponseEntity.status(HttpStatus.CREATED).build();
+
         }catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
@@ -74,7 +76,7 @@ public class AuthController {
             response.setHeader("Set-Cookie", cookieService.createCookie(eventToken).toString());
 
             return ResponseEntity.ok().body(jwtUtil.extractClaim(eventToken));
-            
+
         } catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage() + "invalid token");
         } catch (Exception e){
@@ -87,7 +89,9 @@ public class AuthController {
     public ResponseEntity<?> validate(@CookieValue(value = "eventToken", required = false) String existingToken) {
         try{
             authService.authenticate(existingToken);
+
             return ResponseEntity.ok().body(jwtUtil.extractClaim(existingToken));
+
         } catch (InvalidTokenException e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (Exception e) {
@@ -99,9 +103,12 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> logout(@CookieValue(value = "eventToken", required = true) String existingToken, HttpServletResponse response) {
         try {
             authService.authenticate(existingToken);
+
             ResponseCookie eventToken = cookieService.deleteTokenCookie();
             response.setHeader("Set-Cookie", eventToken.toString());
+
             return ResponseEntity.ok(Map.of("message", "Logout realizado com sucesso"));
+
         }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
         }
