@@ -1,10 +1,11 @@
 package com.alphasolutions.eventapi.service;
-
-import java.sql.Date;
-
-import com.alphasolutions.eventapi.model.Evento;
+import java.time.LocalDate;
+import org.springframework.stereotype.Service;
+import com.alphasolutions.eventapi.model.entity.Evento;
 import com.alphasolutions.eventapi.repository.EventoRepository;
 
+
+@Service
 public class EventoService {
 
     private final EventoRepository eventoRepository;
@@ -13,13 +14,13 @@ public class EventoService {
         this.eventoRepository = eventoRepository;
     }
 
-    public void createEvent(String eventName, java.util.Date eventDate, String eventLocation, String eventDescription, String imagemUrl) {
+    public void createEvent(String eventName, LocalDate eventDate, String eventLocation, String eventDescription, String imagemUrl) {
 
         // Create a new event object using the provided parameters
         Evento evento = new Evento();
         evento.setNome(eventName);
         evento.setDataEvento(eventDate);
-        evento.setLocal(eventLocation);
+        evento.setLocalizacao(eventLocation);
         evento.setDescricao(eventDescription);
         evento.setImagemUrl(imagemUrl);
 

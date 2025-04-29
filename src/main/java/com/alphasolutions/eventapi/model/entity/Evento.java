@@ -2,7 +2,9 @@ package com.alphasolutions.eventapi.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -10,6 +12,8 @@ import java.time.LocalDate;
 @Table(name = "evento")
 @Data
 @NoArgsConstructor
+@Setter
+@Getter
 public class Evento {
 
     @Id
