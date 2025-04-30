@@ -15,7 +15,7 @@ import java.util.List;
 public class UserProfileCardDTO {
     private String idUser;
     private String name;
-    private String avatar;
+    private String avatarUrl;
     private String bio;
     private List<ConexaoDTO> connections;
 }

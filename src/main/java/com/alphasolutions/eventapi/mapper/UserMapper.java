@@ -4,7 +4,6 @@ import com.alphasolutions.eventapi.model.dto.UserProfileCardDTO;
 import com.alphasolutions.eventapi.model.entity.User;
 
 
-
 public interface UserMapper {
     public static UserProfileCardDTO toProfileCardDTO(User user) {
         if (user == null) {
@@ -14,8 +13,9 @@ public interface UserMapper {
         UserProfileCardDTO dto = new UserProfileCardDTO();
         dto.setIdUser(user.getIdUser());
         dto.setName(user.getNome());
-        dto.setAvatar(user.getAvatarUrl());
-        //dto.setBio(user.getBio());
+        dto.setAvatarUrl(user.getAvatarUrl());
+        dto.setBio(user.getBio());
+        
 
         return dto;
     }

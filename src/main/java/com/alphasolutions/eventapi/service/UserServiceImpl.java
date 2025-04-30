@@ -43,10 +43,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createUser(UserDTO userDTO) {
-        if(isEmailAlreadyExists(userDTO.getEmail())){
+        if (isEmailAlreadyExists(userDTO.getEmail())){
             throw new UserAlreadyExistsException("Já existe uma conta criada com este email!");
         }
-        if(userDTO.getId() == null) {
+        if (userDTO.getId() == null) {
 
             String id;
             String uniqueCode;
@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
             do {
                 id = IdentifierGenerator.generateIdentity(21);
             } while(userRepository.existsById(id));
+
             do {
                 uniqueCode = identifierGenerator.generateUniqueCode();
             } while (userRepository.existsByUniqueCode(uniqueCode));
@@ -65,9 +66,23 @@ public class UserServiceImpl implements UserService {
 
         User userInDatabase = userRepository.findById(userDTO.getId()).orElse(null);
 
+
         if(userInDatabase == null) {
+            String avatarUrl = "https://api.dicebear.com/7.x/avatars/svg?seed=" + userDTO.getId();
+
             Role role = new Role(2L,"Participante");
-            User userWithPassword = new User(userDTO.getId(),userDTO.getUsername(),role,null,userDTO.getEmail(),userDTO.getRedesocial(), userDTO.getPassword() ,userDTO.getUniqueCode());
+
+            User userWithPassword = new User(
+                userDTO.getId(),
+                userDTO.getUsername(),
+                role,
+                null,
+                userDTO.getEmail(),
+                userDTO.getRedesocial(),
+                userDTO.getPassword(),
+                userDTO.getUniqueCode(),
+                avatarUrl
+            );
 
             userRepository.save(userWithPassword);
         }
