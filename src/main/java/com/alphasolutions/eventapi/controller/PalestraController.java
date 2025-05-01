@@ -29,7 +29,6 @@ import java.util.*;
 public class PalestraController {
 
     private final AuthService authService;
-    private final PalestraRepository palestraRepository;
     private final PalestraService palestraService;
     private final UserService userService;
     private final QuizzSchedulerService quizzSchedulerService;
@@ -45,7 +44,6 @@ public class PalestraController {
             UserService userService,
             QuizzSchedulerService quizzSchedulerService,
             SimpMessagingTemplate messagingTemplate) {    
-        this.palestraRepository = palestraRepository;
         this.palestraService = palestraService;
         this.authService = authService;
         this.userService = userService;
