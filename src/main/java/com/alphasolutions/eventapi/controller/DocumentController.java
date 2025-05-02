@@ -1,7 +1,6 @@
 package com.alphasolutions.eventapi.controller;
 
-import org.apache.tika.Tika;
-import org.springframework.http.HttpStatus;
+import com.alphasolutions.eventapi.service.DocumentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,28 +9,17 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("api/document")
 public class DocumentController {
 
-    private final Tika tika = new Tika();
+    private final DocumentService documentService;
 
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; 
+    public DocumentController(DocumentService documentService) {
+        this.documentService = documentService;
+    }
 
     @PostMapping("/extract")
     public ResponseEntity<String> extractText(@RequestParam("file") MultipartFile file) {
         try {
-
-            if (file.getSize() > MAX_FILE_SIZE) {
-                return ResponseEntity
-                        .status(HttpStatus.PAYLOAD_TOO_LARGE) 
-                        .body("Arquivo muito grande! O limite permitido é 10MB.");
-            }
-
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Arquivo vazio.");
-            }
-
-            
-            String text = tika.parseToString(file.getInputStream());
+            String text = documentService.extractTextFromFile(file);
             return ResponseEntity.ok(text);
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Erro ao extrair texto.");

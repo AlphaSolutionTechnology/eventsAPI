@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TikaConfig {
 
-    @Bean                
+    @Bean
     public Tika tika() {
         return new Tika();
     }
