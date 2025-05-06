@@ -1,4 +1,3 @@
-
 package com.alphasolutions.eventapi.model.dto;
 
 import lombok.AllArgsConstructor;
@@ -9,8 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResultDTO {
-    private int correctAnswerCount;
-    private int wrongAnswerCount;
-    private int score;
-    private Double totalTime;
+    private Integer correctAnswers;
+    private Integer wrongAnswers;
+    private Integer score;
 }

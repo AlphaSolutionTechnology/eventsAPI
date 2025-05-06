@@ -1,7 +1,10 @@
 package com.alphasolutions.eventapi.controller;
 
 import com.alphasolutions.eventapi.exception.AlreadySubscribedInThisEventException;
+import com.alphasolutions.eventapi.exception.InvalidEventDateException;
+import com.alphasolutions.eventapi.exception.InvalidRoleException;
 import com.alphasolutions.eventapi.exception.InvalidTokenException;
+import com.alphasolutions.eventapi.model.dto.EventDTO;
 import com.alphasolutions.eventapi.model.dto.EventSubscriptionPojo;
 import com.alphasolutions.eventapi.service.AuthService;
 import com.alphasolutions.eventapi.service.EventService;
@@ -18,16 +21,15 @@ public class EventoController {
 
     private final AuthService authService;
     private final EventService eventService;
-    private final UserService userService;
 
-    public EventoController(AuthService authService, EventService eventService, UserService userService) {
+    public EventoController(AuthService authService, EventService eventService) {
         this.authService = authService;
         this.eventService = eventService;
-        this.userService = userService;
+
     }
 
     @PatchMapping("/subscribe")
-    public ResponseEntity<?> subscribe(@CookieValue("eventToken") String eventToken ,@RequestBody EventSubscriptionPojo eventSubscriptionForm) throws InvalidTokenException {
+    public ResponseEntity<?> subscribe(@CookieValue("eventToken") String eventToken ,@RequestBody EventSubscriptionPojo eventSubscriptionForm) {
         try {
             authService.authenticate(eventToken);
             eventService.subscribe(eventSubscriptionForm);
@@ -63,9 +65,20 @@ public class EventoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-}
 
-// É um teste de PR
-// Teste 2 de PR
-// Teste 3 de PR
-// TESTE 4 DE PR
+    @PostMapping("/create")
+    public ResponseEntity<?> createEvent(@RequestBody EventDTO eventDTO, @CookieValue("eventToken") String eventToken ){
+        try {
+            authService.authenticateAdmin(eventToken);
+            eventService.createEvent(eventDTO);
+            return ResponseEntity.status(HttpStatus.CREATED). build();
+        }catch (InvalidTokenException | InvalidRoleException invalidTokenException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage());
+        }catch (InvalidEventDateException | IllegalArgumentException invalidEventDateException){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(invalidEventDateException.getMessage());
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+    }
+}

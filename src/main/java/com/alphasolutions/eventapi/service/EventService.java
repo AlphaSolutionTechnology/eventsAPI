@@ -1,5 +1,6 @@
 package com.alphasolutions.eventapi.service;
 
+import com.alphasolutions.eventapi.model.dto.EventDTO;
 import com.alphasolutions.eventapi.model.dto.EventSubscriptionPojo;
 import com.alphasolutions.eventapi.model.dto.UserData;
 import com.alphasolutions.eventapi.model.entity.Evento;
@@ -12,6 +13,6 @@ public interface EventService {
 
     List<Evento> getEvents();
     List<UserData> getParticipants(Long idEvento);
-
+    void createEvent(EventDTO evento);
     void subscribe(EventSubscriptionPojo eventSubscriptionForm);
 }
