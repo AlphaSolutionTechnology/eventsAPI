@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
 
         if(userInDatabase == null) {
-            String avatarUrl = "https://api.dicebear.com/7.x/avatars/svg?seed=" + userDTO.getId();
+            String avatarUrl = "https://api.dicebear.com/7.x/adventurer/svg?seed=" + userDTO.getId();
 
             Role role = new Role(2L,"Participante");
 

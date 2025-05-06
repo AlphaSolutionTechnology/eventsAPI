@@ -44,7 +44,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         } while(userRepository.existsById(uniqueCode));
 
         // Gerando URL do avatar usando o ID do google
-        String avatarUrl = "https://api.dicebear.com/7.x/adventurers/svg?seed=" + googlePayload.getSubject();
+        String avatarUrl = "https://api.dicebear.com/7.x/adventurer/svg?seed=" + googlePayload.getSubject();
 
         user = userRepository.save(new User(
             googlePayload.getSubject(),
