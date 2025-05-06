@@ -12,6 +12,7 @@ import com.alphasolutions.eventapi.mapper.UserMapper;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -51,7 +52,9 @@ public class UserController {
             UserProfileCardDTO dto = UserMapper.toProfileCardDTO(user);
 
             // 5. Retorna o DTO
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(dto);
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
