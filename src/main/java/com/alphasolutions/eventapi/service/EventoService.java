@@ -24,7 +24,14 @@ public class EventoService {
         evento.setDescricao(eventDescription);
         evento.setImagemUrl(imagemUrl);
 
-        // Save the event to the database using the repository
+
+
+
+        //teste
+
+
+
+    //teste bug PR        // Save the event to the database using the repository
         eventoRepository.save(evento);
 
 

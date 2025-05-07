@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+
+//teste
+
 @RestController
 @RequestMapping("/api/ranking")
 public class RankingController {
