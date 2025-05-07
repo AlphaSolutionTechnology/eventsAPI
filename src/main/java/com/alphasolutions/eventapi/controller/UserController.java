@@ -34,24 +34,16 @@ public class UserController {
         @CookieValue(value = "eventToken", required = false) String eventToken
     ) {
         try {
-            // 1. Validação do token
-            if (eventToken == null || eventToken.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-            }
+            // 1. Autenticação do token com o AuthService
+            authService.authenticate(eventToken);
 
-            // 2. Autenticação
-            authService.authenticate(eventToken); // Lança AuthenticationException se falhar
-
-            // 3. Busca o usuário
+            // 2. Busca o usuário
             User user = userService.getUserByToken(eventToken);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404
-            }
-
-            // 4. Converte User para DTO (protege dados sensíveis)
+            
+            // 3. Converte User para DTO (protege dados sensíveis)
             UserProfileCardDTO dto = UserMapper.toProfileCardDTO(user);
 
-            // 5. Retorna o DTO
+            // 4. Retorna o DTO
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(dto);
