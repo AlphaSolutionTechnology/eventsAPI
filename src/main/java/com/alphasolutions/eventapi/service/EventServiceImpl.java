@@ -1,7 +1,9 @@
 package com.alphasolutions.eventapi.service;
 
 import com.alphasolutions.eventapi.exception.AlreadySubscribedInThisEventException;
+import com.alphasolutions.eventapi.exception.InvalidEventDateException;
 import com.alphasolutions.eventapi.exception.UserNotFoundException;
+import com.alphasolutions.eventapi.model.dto.EventDTO;
 import com.alphasolutions.eventapi.model.dto.EventSubscriptionPojo;
 import com.alphasolutions.eventapi.model.dto.UserData;
 import com.alphasolutions.eventapi.model.entity.Evento;
@@ -11,6 +13,7 @@ import com.alphasolutions.eventapi.repository.UserRepository;
 import jakarta.persistence.Id;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +52,23 @@ public class EventServiceImpl implements EventService {
         }
         System.out.println(listOfUserData);
         return listOfUserData;
+    }
+
+    @Override
+    public void createEvent(EventDTO evento) {
+        if(evento.getName() == null || evento.getName().isEmpty()) {
+            throw new IllegalArgumentException("Name should not be empty");
+        }
+        if(evento.getEventDate() != null  && evento.getEventDate().isBefore(LocalDate.now())) {
+            throw new InvalidEventDateException("Data do evento não pode ser antes do dia atual!");
+        }
+        Evento event = new Evento();
+        event.setNome(evento.getName());
+        event.setDescricao(evento.getDescription());
+        event.setDataEvento(evento.getEventDate());
+        event.setLocalizacao(evento.getLocation());
+        event.setImagemUrl(evento.getImageUrl());
+        eventoRepository.save(event);
     }
 
     @Override
