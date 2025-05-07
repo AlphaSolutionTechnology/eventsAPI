@@ -32,11 +32,11 @@ public class EventoController {
             authService.authenticate(eventToken);
             eventService.subscribe(eventSubscriptionForm);
             return ResponseEntity.status(HttpStatus.OK).build();
-        }catch (InvalidTokenException e) {
+        } catch (InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }catch (AlreadySubscribedInThisEventException alreadySubscribedInThisEventException) {
+        } catch (AlreadySubscribedInThisEventException alreadySubscribedInThisEventException) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(alreadySubscribedInThisEventException.getMessage());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
@@ -47,9 +47,9 @@ public class EventoController {
         try {
             authService.authenticate(eventToken);
             return ResponseEntity.ok(eventService.getEvents());
-        }catch (InvalidTokenException invalidTokenException) {
+        } catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(invalidTokenException.getMessage());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -59,7 +59,7 @@ public class EventoController {
         try {
             authService.authenticate(eventToken);
             return ResponseEntity.ok(eventService.getParticipants(idEvento));
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
