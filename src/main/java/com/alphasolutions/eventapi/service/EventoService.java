@@ -27,6 +27,10 @@ public class EventoService {
 
 
 
+        //teste
+
+
+
     //teste bug PR        // Save the event to the database using the repository
         eventoRepository.save(evento);
 
