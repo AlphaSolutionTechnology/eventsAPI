@@ -46,14 +46,14 @@ public class ConnectionServiceImpl implements ConnectionService {
     public void connect(String idSolicitante, String idSolicitado, Status status) {
 
         if (idSolicitante.equals(idSolicitado)) {
-            throw new SelfConnectionException("Você não pode se conectar com sí mesmo!");
+            throw new SelfConnectionException("You cannot connect with yourself");
         }
 
         User solicitante = userRepository.findByUniqueCode(idSolicitante);
         User solicitado = userRepository.findByUniqueCode(idSolicitado);
 
         if (solicitante == null || solicitado == null) {
-            throw new UserNotFoundException("Não foi encontrado nenhum usuário com este id" + (solicitante == null ? idSolicitante : idSolicitado));
+            throw new UserNotFoundException("No user found with ID: " + (solicitante == null ? idSolicitante : idSolicitado));
         }
 
         if (isConnected(solicitante, solicitado)) {
@@ -63,11 +63,12 @@ public class ConnectionServiceImpl implements ConnectionService {
             Conexao currentStatus = solicitantSideStatus == null ? solicitatedSideStatus : solicitantSideStatus;
 
             if (currentStatus.getStatus().equals(Status.ACCEPTED.getStatus())) {
-                throw new AlreadyConnectedUsersException("Usuários já estão conectados!");
+                throw new AlreadyConnectedUsersException("Users are already connected");
             }
             if (currentStatus.getStatus().equals(Status.WAITING.getStatus())) {
-                String message = idSolicitante.equals(currentStatus.getSolicitado().getUniqueCode()) ? "Este usuário enviou a você um pedido de conexão, aceite se quiser se conectar com ele!":"Esperando pela resposta do outro usuário";
-                System.out.println(idSolicitante+ " " + solicitado.getUniqueCode());
+                String message = idSolicitante.equals(currentStatus.getSolicitado().getUniqueCode()) 
+                    ? "This user has sent you a connection request. Accept if you want to connect with them."
+                    : "Waiting for the other user's response";
                 throw new WaitingForResponseException(message);
             }
         }

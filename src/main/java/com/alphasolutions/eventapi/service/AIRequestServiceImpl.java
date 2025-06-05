@@ -34,7 +34,7 @@ public class AIRequestServiceImpl implements AIRequestService {
         String userMessage = (String) request.get("text");
         int questionCount = Integer.parseInt(request.getOrDefault("questionCount", 2).toString());
         if (questionCount > 20 ) {
-            throw new GeneratedQuestionLimitException("Limite de questões excedido: o limite é 20");
+            throw new GeneratedQuestionLimitException("Question limit exceeded: maximum is 20 questions");
         }
         if(questionCount < 1){
             questionCount = 1;
@@ -64,17 +64,29 @@ public class AIRequestServiceImpl implements AIRequestService {
                 ObjectMapper objectMapper = new ObjectMapper();
                 List<Map<String, Object>> parsedJson = objectMapper.readValue(jsonResponse, new TypeReference<>() {});
 
+                // Add new questions to history with timestamp
+                for (Map<String, Object> question : parsedJson) {
+                    question.put("timestamp", System.currentTimeMillis());
+                }
                 history.addAll(parsedJson);
+                
+                // Clean up old questions (older than 24 hours) and maintain size limit
+                long twentyFourHoursAgo = System.currentTimeMillis() - (24 * 60 * 60 * 1000);
+                history.removeIf(question -> 
+                    (Long) question.getOrDefault("timestamp", 0L) < twentyFourHoursAgo
+                );
+                
+                // If still over limit, remove oldest entries
                 while (history.size() > 50) {
                     history.remove(0);
                 }
 
                 return parsedJson;
             } catch (Exception e) {
-                throw new InternalError("API ERROR");
+                throw new InternalError("Failed to process API response");
             }
         } catch (Exception e) {
-            throw new InternalError("API ERROR");
+            throw new InternalError("Failed to communicate with AI service");
         }
     }
 
@@ -82,21 +94,20 @@ public class AIRequestServiceImpl implements AIRequestService {
         Map<String, Object> responseBody = response.getBody();
 
         if (responseBody == null || !responseBody.containsKey("candidates")) {
-            throw new InternalError("API ERROR");
+            throw new InternalError("Invalid API response format");
         }
 
         List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseBody.get("candidates");
         if (candidates.isEmpty()) {
-            throw new InternalError("API ERROR");
+            throw new InternalError("No candidates in API response");
         }
 
         Map<String, Object> firstCandidate = candidates.get(0);
         Map<String, Object> content = (Map<String, Object>) firstCandidate.get("content");
         List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
 
-
         if (parts.isEmpty()) {
-            throw new InternalError("API ERROR");
+            throw new InternalError("No content parts in API response");
         }
         return parts;
     }
@@ -108,9 +119,9 @@ public class AIRequestServiceImpl implements AIRequestService {
         if (history != null && !history.isEmpty()) {
             StringBuilder historyPrompt = new StringBuilder();
             for (Map<String,Object> question : history) {
-                historyPrompt.append("- Pergunta: ").append(question.get("questionText")).append("\n");
-                historyPrompt.append("  Opções: ").append(String.join(", ", (List<String>) question.get("choices"))).append("\n");
-                historyPrompt.append("  Resposta Correta: ").append(question.get("correctAnswer")).append("\n\n");
+                historyPrompt.append("- Question: ").append(question.get("questionText")).append("\n");
+                historyPrompt.append("  Options: ").append(String.join(", ", (List<String>) question.get("choices"))).append("\n");
+                historyPrompt.append("  Correct Answer: ").append(question.get("correctAnswer")).append("\n\n");
             }
             return historyPrompt.toString();
         }

@@ -29,11 +29,11 @@ public class AuthServiceImpl implements AuthService {
     public String authenticate(String email, String password) {
         User user = userRepository.findByEmail(email).orElse(null);
         if(user == null) {
-            throw new UserNotFoundException("Credenciais Inválidas");
+            throw new UserNotFoundException("Invalid credentials");
         }
         boolean isValid = passwordUtils.checkPassword(password, user.getPassword());
         if(!isValid) {
-            throw new IllegalArgumentException("Credenciais Inválidas");
+            throw new IllegalArgumentException("Invalid credentials");
         }
         return jwtUtil.generateToken(user);
     }
@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
         if(claim.get("error") == null){
             return;
         }
-        throw new InvalidTokenException("Token invalido");
+        throw new InvalidTokenException("Invalid token");
     }
 
     @Override

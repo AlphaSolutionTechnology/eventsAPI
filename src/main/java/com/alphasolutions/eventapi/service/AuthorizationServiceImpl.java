@@ -30,7 +30,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         if(verifiedToken.get("error") == null) {
             Role role = roleRepository.findById(1L).orElse(null);
             if (role == null) {
-                throw new InvalidRoleException("NO such role");
+                throw new InvalidRoleException("Role not found");
             }
 
             return verifiedToken.get("role") != null && role.getRole().equals(verifiedToken.get("role").toString());
@@ -46,7 +46,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             if(uniqueCode.equals(solicitant)){
                 return true;
             }
-            throw new UserNotMatchWithRequestException("Requisição negada");
+            throw new UserNotMatchWithRequestException("Request denied");
 
         }
         throw new InvalidTokenException("Invalid token");
