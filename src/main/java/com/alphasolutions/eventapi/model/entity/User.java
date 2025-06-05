@@ -51,11 +51,13 @@ public class User {
     @JoinColumn(name = "palestra_atual")
     private Palestra palestraAtual;
 
-    @OneToOne
-    @JoinColumn(name = "avatar_seed")
-    private Avatar avatar;
+    @Column(name = "bio")
+    private String bio;
 
-    public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode) {
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
+    public User(String id, String nome, Role role, Evento evento, String email, String redeSocial, String uniqueCode, String avatarUrl) {
         this.idUser = id;
         this.nome = nome;
         this.role = role;
@@ -63,9 +65,10 @@ public class User {
         this.email = email;
         this.redesocial = redeSocial;
         this.uniqueCode = uniqueCode;
+        this.avatarUrl = avatarUrl;
     }
 
-    public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode) {
+    public User(String id, String username, Role role, Evento evento, String email, String redesocial, String password, String uniqueCode, String avatarUrl) {
         this.idUser = id;
         this.nome = username;
         this.role = role;
@@ -74,6 +77,7 @@ public class User {
         this.redesocial = redesocial;
         this.password = password;
         this.uniqueCode = uniqueCode;
+        this.avatarUrl = avatarUrl;
     }
 
 

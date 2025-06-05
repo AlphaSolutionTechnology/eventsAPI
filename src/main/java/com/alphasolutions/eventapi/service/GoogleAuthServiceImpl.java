@@ -24,21 +24,39 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     @Override
     public String createAccountWithGoogle(String token) {
         Payload googlePayload;
+
         try{
             googlePayload = jwtUtil.verifyGoogleToken(token);
         } catch (Exception e) {
             throw new InvalidTokenException(e.getMessage());
         }
+
         User user = userRepository.findById(googlePayload.getSubject()).orElse(null);
+
         if (user != null) {
             return jwtUtil.generateToken(user);
         }
+
         String uniqueCode;
+
         do {
             uniqueCode = IdentifierGenerator.generateIdentity(6);
-        }while(userRepository.existsById(uniqueCode));
+        } while(userRepository.existsById(uniqueCode));
 
-        user = userRepository.save(new User(googlePayload.getSubject(),(String) googlePayload.get("name"),new Role(2L,"Participante"),new Evento(1L,"Primeiro Evento"),(String) googlePayload.get("email"),null,uniqueCode));
+        // Gerando URL do avatar usando o ID do google
+        String avatarUrl = "https://api.dicebear.com/7.x/adventurer/svg?seed=" + googlePayload.getSubject();
+
+        user = userRepository.save(new User(
+            googlePayload.getSubject(),
+            (String) googlePayload.get("name"),
+            new Role(2L,"Participante"),
+            new Evento(1L,"Primeiro Evento"),
+            (String) googlePayload.get("email"),
+            null,
+            uniqueCode,
+            avatarUrl
+        ));
+
         return jwtUtil.generateToken(user);
     }
 

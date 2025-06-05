@@ -61,21 +61,25 @@ public class ConnectionController {
             authService.authenticate(token);
             authorizationService.isUserSolicitant(token,requestData.getFrom());
             connectionService.connect(requestData.getFrom(), requestData.getTo(), Status.WAITING);
+
             User user = userService.getUserByToken(token);
             String[] senderName = user.getNome().split(" ");
+            
             messagingTemplate.convertAndSendToUser(requestData.getTo(),"/queue/notification",Map.of("to", requestData.getTo(), "from", requestData.getFrom() ,"name",senderName[0] + " "+ (senderName.length >= 2 ? senderName[1]:""),"message",senderName[0]+ " "+ (senderName.length >= 2 ? senderName[1]:"") + " quer se conectar com você!"));
+
             return ResponseEntity.ok().body(Map.of("server","Enviada com Sucesso!"));
+
         } catch (AlreadyConnectedUsersException exception) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("server", exception.getMessage()));
         } catch (WaitingForResponseException waitingForResponseException) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(Map.of("server",waitingForResponseException.getMessage()));
-        }catch (UserNotMatchWithRequestException userNotMatchWithRequestException){
+        } catch (UserNotMatchWithRequestException userNotMatchWithRequestException){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("server",userNotMatchWithRequestException.getMessage()));
-        }  catch (UserNotFoundException userNotFoundException){
+        } catch (UserNotFoundException userNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("server",userNotFoundException.getMessage()));
         } catch (InvalidTokenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("server",e.getMessage()));
-        }catch (Exception exception) {
+        } catch (Exception exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("server",exception.getMessage()));
         }
     }
@@ -86,7 +90,7 @@ public class ConnectionController {
         try {
             authService.authenticate(token);
             return  ResponseEntity.ok(connectionService.getAcceotedConnections(token));
-        }catch (InvalidTokenException invalidTokenException) {
+        } catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (Exception exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
@@ -99,11 +103,11 @@ public class ConnectionController {
             authService.authenticate(token);
             connectionService.answerConnectionRequest(connectionRequest.getTo(),connectionRequest.getFrom(),connectionRequest.getStatus());
             return ResponseEntity.ok().build();
-        }catch (InvalidTokenException invalidTokenException) {
+        } catch (InvalidTokenException invalidTokenException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }catch (NullPointerException nullPointerException) {
+        } catch (NullPointerException nullPointerException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }catch (Exception exception) {
+        } catch (Exception exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
